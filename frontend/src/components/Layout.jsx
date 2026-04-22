@@ -49,8 +49,8 @@ const Layout = () => {
           }
           .main-content {
             margin-left: 0;
-            padding: 1.2rem 1rem;
-            padding-bottom: 90px; /* Espacio para el bottom nav */
+            padding: 0.75rem 0.75rem;
+            padding-bottom: 80px; /* Espacio para el bottom nav */
           }
         }
       `}</style>

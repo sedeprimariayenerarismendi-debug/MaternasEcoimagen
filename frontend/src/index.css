@@ -119,6 +119,16 @@ input:focus {
   box-shadow: var(--shadow-hover);
 }
 
+@media (max-width: 768px) {
+  .organic-card:hover {
+    transform: none;
+    box-shadow: var(--shadow);
+  }
+  .organic-card {
+    border-radius: 20px;
+  }
+}
+
 .blob {
   position: absolute;
   filter: blur(60px);
@@ -142,4 +152,43 @@ input:focus {
 
 .fade-in {
   animation: fadeIn 0.5s ease forwards;
+}
+
+/* Mobile global compaction */
+@media (max-width: 768px) {
+  h2 { font-size: 1.25rem !important; letter-spacing: -0.4px !important; }
+  h3 { font-size: 1rem !important; }
+  p  { font-size: 0.82rem !important; }
+  .organic-card { border-radius: 16px; border: 1px solid var(--border-color); }
+  
+  /* Compact main-content padding for layout */
+  [data-mobile-main] {
+    padding: 1rem 1rem 5rem 1rem !important;
+  }
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 14px !important;
+    gap: 10px !important;
+  }
+  .stat-value {
+    font-size: 1.8rem !important;
+  }
+  .stat-label {
+    font-size: 0.6rem !important;
+  }
 }

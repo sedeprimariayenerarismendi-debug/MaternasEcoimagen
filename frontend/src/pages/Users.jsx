@@ -90,29 +90,29 @@ const Users = () => {
 
   return (
     <div className="fade-in">
-      <div className="users-header">
+      <div className="users-header" style={{ marginBottom: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '900', letterSpacing: '-1px' }}>Gestión de Usuarios</h2>
-          <p style={{ color: 'var(--text-muted)', marginTop: '4px' }}>Administra el personal médico y administrativo.</p>
+          <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 2rem)', fontWeight: '900', letterSpacing: '-0.8px' }}>Usuarios</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Gestión de personal médico y administrativo.</p>
         </div>
         <motion.button 
           whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
           onClick={() => handleOpenModal()}
-          style={{ background: 'var(--primary-color)', color: 'white', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '700', borderRadius: '16px', whiteSpace: 'nowrap' }}
+          style={{ background: 'var(--primary-color)', color: 'white', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', borderRadius: '16px', fontSize: '0.9rem', whiteSpace: 'nowrap' }}
         >
-          <Plus size={20} />
-          <span className="users-btn-text">Nuevo Usuario</span>
+          <Plus size={18} />
+          <span className="users-btn-text">Nuevo</span>
         </motion.button>
       </div>
 
       <div className="organic-card" style={{ overflow: 'hidden' }}>
-        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)' }}>
           <div style={{ position: 'relative' }}>
-            <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <Search size={16} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input 
-              type="text" placeholder="Buscar por nombre o email..." 
+              type="text" placeholder="Buscar..." 
               value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '46px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '12px 16px 12px 46px', width: '100%', fontSize: '0.95rem' }}
+              style={{ paddingLeft: '40px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '10px 15px 10px 40px', width: '100%', fontSize: '0.9rem' }}
             />
           </div>
         </div>
@@ -121,11 +121,11 @@ const Users = () => {
         <div className="users-table-view" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '550px' }}>
             <thead>
-              <tr style={{ background: 'var(--bg-color)', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                <th style={{ padding: '1.2rem 1.5rem' }}>USUARIO</th>
-                <th style={{ padding: '1.2rem 1.5rem' }}>ROL</th>
-                <th style={{ padding: '1.2rem 1.5rem' }}>ESTADO</th>
-                <th style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>ACCIONES</th>
+              <tr style={{ background: 'var(--bg-color)', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                <th style={{ padding: '1rem 1.2rem' }}>USUARIO</th>
+                <th style={{ padding: '1rem 1.2rem' }}>ROL</th>
+                <th style={{ padding: '1rem 1.2rem' }}>ESTADO</th>
+                <th style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>ACCIONES</th>
               </tr>
             </thead>
             <tbody>
@@ -133,33 +133,33 @@ const Users = () => {
                 const rolStyle = getRolColor(u.rol);
                 return (
                   <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '1.2rem 1.5rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '14px', background: 'var(--primary-color)20', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', flexShrink: 0 }}>
-                          <User size={20} />
+                    <td style={{ padding: '1rem 1.2rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'var(--primary-color)20', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', flexShrink: 0 }}>
+                          <User size={18} />
                         </div>
                         <div>
-                          <p style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '0.95rem' }}>{u.nombre}</p>
-                          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{u.email}</p>
+                          <p style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '0.9rem' }}>{u.nombre}</p>
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{u.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '1.2rem 1.5rem' }}>
-                      <span style={{ padding: '5px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', background: rolStyle.bg, color: rolStyle.color }}>{u.rol}</span>
+                    <td style={{ padding: '1rem 1.2rem' }}>
+                      <span style={{ padding: '4px 12px', borderRadius: '15px', fontSize: '0.7rem', fontWeight: '800', background: rolStyle.bg, color: rolStyle.color }}>{u.rol}</span>
                     </td>
-                    <td style={{ padding: '1.2rem 1.5rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: u.activo ? '#10b981' : '#ef4444', fontSize: '0.85rem', fontWeight: '700' }}>
-                        {u.activo ? <CheckCircle size={16} /> : <XCircle size={16} />}
+                    <td style={{ padding: '0.8rem 1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: u.activo ? '#10b981' : '#ef4444', fontSize: '0.8rem', fontWeight: '700' }}>
+                        {u.activo ? <CheckCircle size={14} /> : <XCircle size={14} />}
                         {u.activo ? 'Activo' : 'Inactivo'}
                       </div>
                     </td>
-                    <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                        <motion.button whileHover={{ scale: 1.1 }} onClick={() => handleOpenModal(u)} style={{ background: 'var(--bg-color)', padding: '8px', color: 'var(--text-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                          <Edit2 size={16} />
+                    <td style={{ padding: '0.8rem 1rem', textAlign: 'right' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                        <motion.button whileHover={{ scale: 1.1 }} onClick={() => handleOpenModal(u)} style={{ background: 'var(--bg-color)', padding: '6px', color: 'var(--text-muted)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <Edit2 size={14} />
                         </motion.button>
-                        <motion.button whileHover={{ scale: 1.1 }} onClick={() => handleToggleStatus(u)} style={{ background: 'var(--bg-color)', padding: '8px', color: u.activo ? '#ef4444' : '#10b981', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                          {u.activo ? <Trash2 size={16} /> : <CheckCircle size={16} />}
+                        <motion.button whileHover={{ scale: 1.1 }} onClick={() => handleToggleStatus(u)} style={{ background: 'var(--bg-color)', padding: '6px', color: u.activo ? '#ef4444' : '#10b981', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          {u.activo ? <Trash2 size={14} /> : <CheckCircle size={14} />}
                         </motion.button>
                       </div>
                     </td>
@@ -175,28 +175,28 @@ const Users = () => {
           {filteredUsers.map(u => {
             const rolStyle = getRolColor(u.rol);
             return (
-              <div key={u.id} style={{ padding: '1rem 1.2rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'var(--primary-color)20', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', flexShrink: 0 }}>
-                  <User size={22} />
+              <div key={u.id} style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'var(--primary-color)20', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', flexShrink: 0 }}>
+                  <User size={18} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <p style={{ fontWeight: '800', color: 'var(--text-main)', fontSize: '0.95rem' }}>{u.nombre}</p>
-                    <span style={{ padding: '3px 10px', borderRadius: '15px', fontSize: '0.7rem', fontWeight: '800', background: rolStyle.bg, color: rolStyle.color }}>{u.rol}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <p style={{ fontWeight: '800', color: 'var(--text-main)', fontSize: '0.9rem' }}>{u.nombre}</p>
+                    <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: '800', background: rolStyle.bg, color: rolStyle.color }}>{u.rol}</span>
                   </div>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: u.activo ? '#10b981' : '#ef4444', fontSize: '0.75rem', fontWeight: '700', marginTop: '4px' }}>
-                    {u.activo ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: u.activo ? '#10b981' : '#ef4444', fontSize: '0.7rem', fontWeight: '700', marginTop: '2px' }}>
+                    {u.activo ? <CheckCircle size={10} /> : <XCircle size={10} />}
                     {u.activo ? 'Activo' : 'Inactivo'}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                  <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleOpenModal(u)} style={{ background: 'var(--bg-color)', padding: '9px', color: 'var(--text-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                    <Edit2 size={15} />
-                  </motion.button>
-                  <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleToggleStatus(u)} style={{ background: 'var(--bg-color)', padding: '9px', color: u.activo ? '#ef4444' : '#10b981', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                    {u.activo ? <Trash2 size={15} /> : <CheckCircle size={15} />}
-                  </motion.button>
+                <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                  <button onClick={() => handleOpenModal(u)} style={{ background: 'var(--bg-color)', padding: '7px', color: 'var(--text-muted)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <Edit2 size={13} />
+                  </button>
+                  <button onClick={() => handleToggleStatus(u)} style={{ background: 'var(--bg-color)', padding: '7px', color: u.activo ? '#ef4444' : '#10b981', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    {u.activo ? <Trash2 size={13} /> : <CheckCircle size={13} />}
+                  </button>
                 </div>
               </div>
             );

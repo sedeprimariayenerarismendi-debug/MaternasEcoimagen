@@ -122,13 +122,13 @@ const MaternaDetail = () => {
           border: '1px solid var(--border-color)',
           display: 'flex', 
           alignItems: 'center', 
-          gap: '10px', 
+          gap: '8px', 
           color: 'var(--text-main)',
-          marginBottom: '2rem',
-          padding: '12px 20px',
-          borderRadius: '16px',
+          marginBottom: '1rem',
+          padding: '8px 16px',
+          borderRadius: '12px',
           fontWeight: '800',
-          fontSize: '0.85rem',
+          fontSize: '0.75rem',
           textTransform: 'uppercase',
           letterSpacing: '1px',
           boxShadow: 'var(--shadow-sm)',
@@ -137,8 +137,8 @@ const MaternaDetail = () => {
           zIndex: 1
         }}
       >
-        <ArrowLeft size={18} />
-        Volver al listado
+        <ArrowLeft size={16} />
+        Volver
       </motion.button>
 
       <div className="detail-grid" style={{ position: 'relative', zIndex: 1 }}>
@@ -146,63 +146,60 @@ const MaternaDetail = () => {
         <div style={{ display: 'grid', gap: '2rem' }}>
           {/* Header Card */}
           <motion.div variants={itemVariants} className="organic-card" style={{ 
-            padding: '2rem', 
+            padding: '1.2rem', 
             display: 'flex',
             alignItems: 'center',
-            gap: '2rem',
+            gap: '1.2rem',
             position: 'relative',
             overflow: 'hidden',
           }}>
             <div style={{ 
-              width: '100px', height: '100px', borderRadius: '28px', 
+              width: 'clamp(60px, 15vw, 100px)', height: 'clamp(60px, 15vw, 100px)', borderRadius: '20px', 
               background: 'var(--bg-color)', display: 'flex', alignItems: 'center', 
               justifyContent: 'center', color: 'var(--primary-color)',
-              border: '2px solid var(--border-color)',
+              border: '1px solid var(--border-color)',
               flexShrink: 0,
-              boxShadow: 'var(--shadow-sm)'
             }}>
-              <Baby size={50} />
+              <Baby size={32} />
             </div>
             
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                <h1 style={{ fontSize: '2.2rem', fontWeight: '950', margin: 0, letterSpacing: '-1.5px', color: 'var(--text-main)' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', fontWeight: '950', margin: 0, letterSpacing: '-1px', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {materna.nombre}
                 </h1>
                 <div style={{ 
-                  padding: '6px 16px', borderRadius: '25px', fontWeight: '900', fontSize: '0.75rem',
-                  textTransform: 'uppercase', letterSpacing: '1px',
+                  padding: '4px 12px', borderRadius: '20px', fontWeight: '900', fontSize: '0.65rem',
+                  textTransform: 'uppercase', letterSpacing: '0.5px',
                   background: `${getRiskColor(materna.tipoRiesgo)}15`, color: getRiskColor(materna.tipoRiesgo),
                   border: `1px solid ${getRiskColor(materna.tipoRiesgo)}30`
                 }}>
                   {materna.tipoRiesgo}
                 </div>
               </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', fontWeight: '600' }}>
-                <span style={{ color: 'var(--text-main)', fontWeight: '800' }}>{materna.tipoDocumento} {materna.documento}</span> • {new Date().getFullYear() - new Date(materna.fechaNacimiento).getFullYear()} años
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600' }}>
+                <span style={{ color: 'var(--text-main)', fontWeight: '800' }}>{materna.documento}</span> • {new Date().getFullYear() - new Date(materna.fechaNacimiento).getFullYear()} años
               </p>
             </div>
           </motion.div>
 
           {/* Pregnancy Tracker */}
           <motion.div variants={itemVariants} className="organic-card" style={{ 
-            padding: '2.5rem', 
+            padding: '1.5rem', 
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
                <div>
-                  <h2 style={{ fontSize: '1.4rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-main)', letterSpacing: '-0.5px' }}>
-                    <Heart color="var(--primary-color)" fill="var(--primary-color)" size={22} />
+                  <h2 style={{ fontSize: '1.1rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
+                    <Heart color="var(--primary-color)" fill="var(--primary-color)" size={18} />
                     Gestación
                   </h2>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600', marginTop: '2px' }}>Seguimiento en tiempo real</p>
                </div>
               <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '2.5rem', fontWeight: '950', color: 'var(--primary-color)', letterSpacing: '-2px' }}>{info.progress}%</span>
-                <p style={{ fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Completado</p>
+                <span style={{ fontSize: '1.8rem', fontWeight: '950', color: 'var(--primary-color)', letterSpacing: '-1px' }}>{info.progress}%</span>
               </div>
             </div>
 
-            <div style={{ width: '100%', height: '24px', background: 'var(--bg-color)', borderRadius: '15px', overflow: 'hidden', marginBottom: '2.5rem', padding: '5px', border: '1px solid var(--border-color)' }}>
+            <div style={{ width: '100%', height: '18px', background: 'var(--bg-color)', borderRadius: '10px', overflow: 'hidden', marginBottom: '1.5rem', padding: '3px', border: '1px solid var(--border-color)' }}>
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${info.progress}%` }}
@@ -210,23 +207,23 @@ const MaternaDetail = () => {
                 style={{ 
                   height: '100%', 
                   background: `linear-gradient(90deg, var(--primary-color), var(--accent-color))`, 
-                  borderRadius: '10px',
-                  boxShadow: 'var(--primary-glow) 0 4px 12px'
+                  borderRadius: '6px',
+                  boxShadow: 'var(--primary-glow) 0 2px 8px'
                 }}
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8rem' }}>
               {[
-                { label: 'PARTO ESTIMADO', val: info.edd.toLocaleDateString(), icon: <Calendar size={18} />, color: 'var(--secondary-color)' },
-                { label: 'TIEMPO ACTUAL', val: `${info.weeks}s, ${info.days}d`, icon: <Clock size={18} />, color: 'var(--primary-color)' }
+                { label: 'EDD', val: info.edd.toLocaleDateString(), icon: <Calendar size={16} />, color: 'var(--secondary-color)' },
+                { label: 'SEMANAS', val: `${info.weeks}s, ${info.days}d`, icon: <Clock size={16} />, color: 'var(--primary-color)' }
               ].map((stat, i) => (
-                <div key={i} style={{ padding: '1.2rem', borderRadius: '24px', background: 'var(--bg-color)', textAlign: 'center', border: '1px solid var(--border-color)' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'var(--card-bg)', margin: '0 auto 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, border: '1px solid var(--border-color)' }}>
+                <div key={i} style={{ padding: '0.8rem', borderRadius: '16px', background: 'var(--bg-color)', textAlign: 'center', border: '1px solid var(--border-color)' }}>
+                  <div style={{ width: '30px', height: '30px', borderRadius: '10px', background: 'var(--card-bg)', margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, border: '1px solid var(--border-color)' }}>
                     {stat.icon}
                   </div>
-                  <p style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--text-muted)', letterSpacing: '1px', marginBottom: '4px' }}>{stat.label}</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: '900', color: 'var(--text-main)', letterSpacing: '-0.5px' }}>{stat.val}</p>
+                  <p style={{ fontSize: '0.6rem', fontWeight: '900', color: 'var(--text-muted)', letterSpacing: '0.5px' }}>{stat.label}</p>
+                  <p style={{ fontSize: '0.9rem', fontWeight: '900', color: 'var(--text-main)' }}>{stat.val}</p>
                 </div>
               ))}
             </div>
@@ -235,45 +232,45 @@ const MaternaDetail = () => {
 
         {/* Column 2: Medical & Contact */}
         <div style={{ display: 'grid', gap: '2rem' }}>
-             <motion.div variants={itemVariants} className="organic-card" style={{ padding: '2rem' }}>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: '950', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-main)', letterSpacing: '-0.5px' }}>
-                  <div style={{ padding: '8px', background: 'var(--secondary-color)15', borderRadius: '14px' }}>
-                    <Stethoscope size={20} color="var(--secondary-color)" />
+             <motion.div variants={itemVariants} className="organic-card" style={{ padding: '1.2rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: '950', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
+                  <div style={{ padding: '6px', background: 'var(--secondary-color)15', borderRadius: '10px' }}>
+                    <Stethoscope size={18} color="var(--secondary-color)" />
                   </div>
                   Data Médica
                 </h3>
-                <div style={{ display: 'grid', gap: '1.2rem' }}>
+                <div style={{ display: 'grid', gap: '0.8rem' }}>
                    {[
-                     { label: 'Tipo de Sangre', val: 'O+' },
+                     { label: 'Sangre', val: 'O+' },
                      { label: 'Alergias', val: 'Ninguna' },
-                     { label: 'Último Control', val: 'Hace 5 días', color: 'var(--success-color)' }
+                     { label: 'Control', val: 'Hace 5d', color: 'var(--success-color)' }
                    ].map((item, i) => (
-                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '10px', borderBottom: i < 2 ? '1px solid var(--border-color)' : 'none' }}>
-                        <span style={{ color: 'var(--text-muted)', fontWeight: '700', fontSize: '1rem' }}>{item.label}</span>
-                        <span style={{ fontWeight: '900', color: item.color || 'var(--text-main)', fontSize: '1rem' }}>{item.val}</span>
+                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '6px', borderBottom: i < 2 ? '1px solid var(--border-color)' : 'none' }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: '700', fontSize: '0.85rem' }}>{item.label}</span>
+                        <span style={{ fontWeight: '900', color: item.color || 'var(--text-main)', fontSize: '0.85rem' }}>{item.val}</span>
                      </div>
                    ))}
                 </div>
              </motion.div>
 
-             <motion.div variants={itemVariants} className="organic-card" style={{ padding: '2rem' }}>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: '950', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-main)', letterSpacing: '-0.5px' }}>
-                  <div style={{ padding: '8px', background: 'var(--primary-color)15', borderRadius: '14px' }}>
-                    <MapPin size={20} color="var(--primary-color)" />
+             <motion.div variants={itemVariants} className="organic-card" style={{ padding: '1.2rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: '950', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
+                  <div style={{ padding: '6px', background: 'var(--primary-color)15', borderRadius: '10px' }}>
+                    <MapPin size={18} color="var(--primary-color)" />
                   </div>
                   Contacto
                 </h3>
-                <div style={{ display: 'grid', gap: '1rem' }}>
+                <div style={{ display: 'grid', gap: '0.6rem' }}>
                    {[
-                     { icon: <Phone size={16} />, text: '+57 321 456 7890' },
-                     { icon: <User size={16} />, text: 'Juan Perez (Pareja)' },
-                     { icon: <MapPin size={16} />, text: 'Cúcuta, Calle 10 #5-20' }
+                     { icon: <Phone size={14} />, text: '+57 321 456 7890' },
+                     { icon: <User size={14} />, text: 'Pareja: Juan Perez' },
+                     { icon: <MapPin size={14} />, text: 'Cúcuta, Calle 10 #5-20' }
                    ].map((item, i) => (
-                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <div style={{ padding: '10px', background: 'var(--bg-color)', borderRadius: '14px', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>
+                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ padding: '8px', background: 'var(--bg-color)', borderRadius: '10px', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>
                           {item.icon}
                         </div>
-                        <span style={{ fontWeight: '800', color: 'var(--text-main)', fontSize: '1rem' }}>{item.text}</span>
+                        <span style={{ fontWeight: '800', color: 'var(--text-main)', fontSize: '0.85rem' }}>{item.text}</span>
                      </div>
                    ))}
                 </div>
@@ -331,19 +328,14 @@ const MaternaDetail = () => {
         .detail-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 2rem;
+          gap: 1rem;
           align-items: start;
         }
 
         @media (min-width: 1024px) {
           .detail-grid {
             grid-template-columns: repeat(2, 1fr);
-          }
-        }
-
-        @media (min-width: 1440px) {
-          .detail-grid {
-            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
           }
         }
       `}</style>

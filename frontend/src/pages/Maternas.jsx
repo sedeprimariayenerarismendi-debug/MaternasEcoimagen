@@ -133,54 +133,53 @@ const Maternas = () => {
         bottom: '-100px', right: '-100px', filter: 'blur(100px)', opacity: 0.08 
       }} />
 
-      <div className="maternas-header">
+      <div className="maternas-header" style={{ marginBottom: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', fontWeight: '900', letterSpacing: '-1px' }}>
-            Seguimiento de Maternas
+          <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 2.2rem)', fontWeight: '900', letterSpacing: '-0.8px' }}>
+            Maternas
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginTop: '6px' }}>Censo y control inteligente de pacientes gestantes.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '2px' }}>Gestión de pacientes gestantes.</p>
         </div>
         <motion.button 
-          whileHover={{ scale: 1.05, boxShadow: 'var(--primary-glow) 0 12px 24px' }}
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={(e) => handleOpenModal(e)}
           style={{ 
             background: 'var(--primary-color)', 
             color: 'white', 
-            padding: '14px 28px', 
+            padding: '10px 20px', 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '12px',
+            gap: '8px',
             fontWeight: '800',
-            borderRadius: '20px',
-            boxShadow: 'var(--primary-glow) 0 8px 16px',
-            fontSize: '1rem',
+            borderRadius: '16px',
+            fontSize: '0.9rem',
             whiteSpace: 'nowrap'
           }}
         >
-          <Plus size={20} />
-          <span className="btn-text">Registrar Materna</span>
+          <Plus size={18} />
+          <span className="btn-text">Nueva</span>
         </motion.button>
       </div>
 
       <div className="organic-card" style={{ overflow: 'hidden', position: 'relative', zIndex: 1 }}>
-        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)' }}>
           <div style={{ position: 'relative' }}>
-            <Search size={20} style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input 
               type="text" 
-              placeholder="Buscar por nombre o documento..." 
+              placeholder="Buscar..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ 
-                paddingLeft: '50px', 
-                paddingRight: '20px',
-                paddingTop: '14px',
-                paddingBottom: '14px',
+                paddingLeft: '42px', 
+                paddingRight: '15px',
+                paddingTop: '10px',
+                paddingBottom: '10px',
                 background: 'var(--bg-color)', 
                 border: '1px solid var(--border-color)',
-                fontSize: '1rem',
-                borderRadius: '16px',
+                fontSize: '0.9rem',
+                borderRadius: '12px',
                 width: '100%'
               }}
             />
@@ -191,12 +190,12 @@ const Maternas = () => {
         <div className="maternas-table-view" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left', minWidth: '700px' }}>
             <thead>
-              <tr style={{ background: 'var(--bg-color)', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.5px' }}>
-                <th style={{ padding: '1.2rem 1.5rem' }}>PACIENTE</th>
-                <th style={{ padding: '1.2rem 1.5rem' }}>DOCUMENTO</th>
-                <th style={{ padding: '1.2rem 1.5rem' }}>F. EMBARAZO</th>
-                <th style={{ padding: '1.2rem 1.5rem' }}>RIESGO</th>
-                <th style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>ACCIONES</th>
+              <tr style={{ background: 'var(--bg-color)', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                <th style={{ padding: '1rem 1.2rem' }}>PACIENTE</th>
+                <th style={{ padding: '1rem 1.2rem' }}>DOCUMENTO</th>
+                <th style={{ padding: '1rem 1.2rem' }}>F. EMBARAZO</th>
+                <th style={{ padding: '1rem 1.2rem' }}>RIESGO</th>
+                <th style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>ACCIONES</th>
               </tr>
             </thead>
             <tbody>
@@ -207,39 +206,39 @@ const Maternas = () => {
                   style={{ cursor: 'pointer', transition: 'all 0.3s' }}
                   className="table-row-hover"
                 >
-                  <td style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '16px', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', border: '2px solid var(--border-color)', flexShrink: 0 }}>
-                        <Baby size={22} />
+                  <td style={{ padding: '1rem 1.2rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', border: '1px solid var(--border-color)', flexShrink: 0 }}>
+                        <Baby size={18} />
                       </div>
                       <div>
-                        <p style={{ fontWeight: '800', fontSize: '1rem', color: 'var(--text-main)' }}>{m.nombre}</p>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>Por: {m.creadaPor?.nombre || 'Admin'}</p>
+                        <p style={{ fontWeight: '800', fontSize: '0.9rem', color: 'var(--text-main)' }}>{m.nombre}</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Por: {m.creadaPor?.nombre || 'Admin'}</p>
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
-                    <p style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-main)' }}>{m.tipoDocumento} {m.documento}</p>
+                  <td style={{ padding: '1rem 1.2rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <p style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)' }}>{m.tipoDocumento} {m.documento}</p>
                   </td>
-                  <td style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-main)' }}>
-                      <Calendar size={16} style={{ color: 'var(--text-muted)' }} />
+                  <td style={{ padding: '1rem 1.2rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: '600', color: 'var(--text-main)' }}>
+                      <Calendar size={14} style={{ color: 'var(--text-muted)' }} />
                       {new Date(m.fechaEmbarazo).toLocaleDateString()}
                     </div>
                   </td>
-                  <td style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '25px', fontSize: '0.78rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30` }}>
-                      <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: getRiskColor(m.tipoRiesgo) }} />
+                  <td style={{ padding: '1rem 1.2rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30` }}>
+                      <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: getRiskColor(m.tipoRiesgo) }} />
                       {m.tipoRiesgo}
                     </div>
                   </td>
-                  <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right', borderBottom: '1px solid var(--border-color)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                      <motion.button whileHover={{ scale: 1.1 }} onClick={(e) => handleOpenModal(e, m)} style={{ background: 'transparent', padding: '8px', color: 'var(--text-muted)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                        <Edit2 size={16} />
+                  <td style={{ padding: '1rem 1.2rem', textAlign: 'right', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                      <motion.button whileHover={{ scale: 1.1 }} onClick={(e) => handleOpenModal(e, m)} style={{ background: 'transparent', padding: '6px', color: 'var(--text-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                        <Edit2 size={14} />
                       </motion.button>
-                      <motion.button whileHover={{ scale: 1.1 }} onClick={(e) => handleDelete(e, m.id)} style={{ background: 'transparent', padding: '8px', color: 'var(--error-color)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                        <Trash2 size={16} />
+                      <motion.button whileHover={{ scale: 1.1 }} onClick={(e) => handleDelete(e, m.id)} style={{ background: 'transparent', padding: '6px', color: 'var(--error-color)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                        <Trash2 size={14} />
                       </motion.button>
                     </div>
                   </td>
@@ -258,41 +257,41 @@ const Maternas = () => {
               animate={{ opacity: 1, y: 0 }}
               onClick={() => handleOpenDetail(m)}
               style={{
-                padding: '1.2rem',
+                padding: '0.8rem 1rem',
                 borderBottom: '1px solid var(--border-color)',
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
+                gap: '8px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
-                  <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', border: '2px solid var(--border-color)', flexShrink: 0 }}>
-                    <Baby size={20} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', border: '1px solid var(--border-color)', flexShrink: 0 }}>
+                    <Baby size={18} />
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontWeight: '800', fontSize: '1rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nombre}</p>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{m.tipoDocumento} {m.documento}</p>
+                    <p style={{ fontWeight: '800', fontSize: '0.9rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nombre}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{m.documento}</p>
                   </div>
                 </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 12px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30`, flexShrink: 0 }}>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: getRiskColor(m.tipoRiesgo) }} />
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '15px', fontSize: '0.65rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30`, flexShrink: 0 }}>
+                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: getRiskColor(m.tipoRiesgo) }} />
                   {m.tipoRiesgo}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}>
-                  <Calendar size={14} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                  <Calendar size={12} />
                   FUM: {new Date(m.fechaEmbarazo).toLocaleDateString()}
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <motion.button whileTap={{ scale: 0.9 }} onClick={(e) => handleOpenModal(e, m)} style={{ background: 'var(--bg-color)', padding: '8px', color: 'var(--text-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                    <Edit2 size={15} />
-                  </motion.button>
-                  <motion.button whileTap={{ scale: 0.9 }} onClick={(e) => handleDelete(e, m.id)} style={{ background: 'var(--bg-color)', padding: '8px', color: 'var(--error-color)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                    <Trash2 size={15} />
-                  </motion.button>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button onClick={(e) => handleOpenModal(e, m)} style={{ background: 'var(--bg-color)', padding: '6px', color: 'var(--text-muted)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <Edit2 size={13} />
+                  </button>
+                  <button onClick={(e) => handleDelete(e, m.id)} style={{ background: 'var(--bg-color)', padding: '6px', color: 'var(--error-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <Trash2 size={13} />
+                  </button>
                 </div>
               </div>
             </motion.div>
