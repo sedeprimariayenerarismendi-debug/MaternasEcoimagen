@@ -3,7 +3,8 @@
   "services": {
     "backend": {
       "source": {
-        "rootDirectory": "backend"
+        "rootDirectory": "backend",
+        "builder": "DOCKER"
       },
       "config": {
         "numReplicas": 1,
@@ -12,7 +13,8 @@
     },
     "frontend": {
       "source": {
-        "rootDirectory": "frontend"
+        "rootDirectory": "frontend",
+        "builder": "DOCKER"
       },
       "config": {
         "numReplicas": 1
