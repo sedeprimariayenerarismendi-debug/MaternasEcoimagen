@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  nombre    String
+  email     String    @unique
+  password  String
+  rol       String    @default("ENFERMERA")
+  activo    Boolean   @default(true)
+  maternas  Materna[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Materna {
+  id              Int      @id @default(autoincrement())
+  nombre          String
+  documento       String   @unique
+  tipoDocumento   String
+  fechaNacimiento DateTime
+  fechaEmbarazo   DateTime
+  fechaRegistro   DateTime @default(now())
+  tipoRiesgo      String   // BAJA, MEDIANA, ALTA
+  creadaPorId     Int
+  creadaPor       User     @relation(fields: [creadaPorId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ThemeConfig {
+  id              Int     @id @default(autoincrement())
+  primaryColor    String  @default("#E91E8C")
+  secondaryColor  String  @default("#3B82F6")
+  accentColor     String  @default("#F472B6")
+  darkMode        Boolean @default(false)
+  clinicName      String  @default("Clínica Maternas")
+  logoUrl         String?
+}
