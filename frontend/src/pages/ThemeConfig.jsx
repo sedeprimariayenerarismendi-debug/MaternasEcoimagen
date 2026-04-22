@@ -39,7 +39,7 @@ const ThemeConfig = () => {
         <p style={{ color: 'var(--text-muted)' }}>Configura la identidad visual de tu plataforma.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
+      <div className="theme-grid">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -220,6 +220,18 @@ const ThemeConfig = () => {
           </div>
         </div>
       </div>
+      <style>{`
+        .theme-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 25px;
+        }
+        @media (max-width: 768px) {
+          .theme-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </div>
   );
 };

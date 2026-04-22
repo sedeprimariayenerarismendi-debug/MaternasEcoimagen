@@ -20,16 +20,25 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login />} />
-            
-            <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/maternas" element={<Maternas />} />
-              <Route path="/maternas/:id" element={<MaternaDetail />} />
-              <Route path="/usuarios" element={<ProtectedRoute adminOnly><Users /></ProtectedRoute>} />
-              <Route path="/configuracion" element={<ProtectedRoute adminOnly><ThemeConfig /></ProtectedRoute>} />
+
+            {/* Rutas protegidas - ProtectedRoute usa Outlet */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<Layout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/maternas" element={<Maternas />} />
+                <Route path="/maternas/:id" element={<MaternaDetail />} />
+              </Route>
             </Route>
 
-            <Route path="*" element={<Navigate to="/" />} />
+            {/* Rutas solo ADMIN */}
+            <Route element={<ProtectedRoute adminOnly />}>
+              <Route element={<Layout />}>
+                <Route path="/usuarios" element={<Users />} />
+                <Route path="/configuracion" element={<ThemeConfig />} />
+              </Route>
+            </Route>
+
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>

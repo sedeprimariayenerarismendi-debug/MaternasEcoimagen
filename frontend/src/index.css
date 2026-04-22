@@ -1,16 +1,33 @@
 :root {
   --primary-color: #e91e8c;
+  --primary-glow: rgba(233, 30, 140, 0.3);
   --secondary-color: #3b82f6;
   --accent-color: #f472b6;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+
   --bg-color: #f8fafc;
   --card-bg: #ffffff;
+  --card-bg-hover: #f1f5f9;
+  --input-bg: #ffffff;
+
   --text-main: #1e293b;
   --text-muted: #64748b;
+  --text-inv: #ffffff;
+
   --border-color: #e2e8f0;
   --sidebar-width: 260px;
   --header-height: 70px;
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --radius: 12px;
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 25px 35px -5px rgba(0, 0, 0, 0.15);
+
+  --radius: 18px;
+  --radius-lg: 35px;
+  --radius-xl: 50px;
+
   font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -24,10 +41,20 @@
 [data-theme="dark"] {
   --bg-color: #0f172a;
   --card-bg: #1e293b;
+  --card-bg-hover: #2d3748;
+  --input-bg: #1e293b;
+
   --text-main: #f1f5f9;
   --text-muted: #94a3b8;
+  --text-inv: #0f172a;
+
   --border-color: #334155;
-  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  --glass-bg: rgba(15, 23, 42, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -73,15 +100,32 @@ input:focus {
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
 }
 
-[data-theme="dark"] .glass {
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.organic-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.organic-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.blob {
+  position: absolute;
+  filter: blur(60px);
+  z-index: -1;
+  opacity: 0.2;
+  pointer-events: none;
+  border-radius: 50%;
 }
 
 /* Animations */

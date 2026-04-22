@@ -14,6 +14,7 @@ import {
   ClipboardList
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Maternas = () => {
   const [maternas, setMaternas] = useState([]);
@@ -77,24 +78,6 @@ const Maternas = () => {
     navigate(`/maternas/${materna.id}`);
   };
 
-  const calculatePregnancyInfo = (pregnancyDate) => {
-    const start = new Date(pregnancyDate);
-    const now = new Date();
-    const diffTime = Math.abs(now - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    // Total days in pregnancy (approx 40 weeks)
-    const totalDays = 280;
-    const progress = Math.min(Math.round((diffDays / totalDays) * 100), 100);
-    const weeks = Math.floor(diffDays / 7);
-    const days = diffDays % 7;
-    
-    const edd = new Date(start);
-    edd.setDate(edd.getDate() + 280);
-    
-    return { progress, weeks, days, edd };
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -129,60 +112,86 @@ const Maternas = () => {
 
   const getRiskColor = (risk) => {
     switch (risk) {
-      case 'ALTA': return '#ef4444';
-      case 'MEDIANA': return '#f59e0b';
-      case 'BAJA': return '#10b981';
-      default: return '#6b7280';
+      case 'ALTA': return 'var(--error-color)';
+      case 'MEDIANA': return 'var(--warning-color)';
+      case 'BAJA': return 'var(--success-color)';
+      default: return 'var(--text-muted)';
     }
   };
 
+  if (loading) return <LoadingSpinner />;
+
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+    <div className="fade-in" style={{ position: 'relative' }}>
+      {/* Decorative Blobs */}
+      <div className="blob" style={{ 
+        width: '500px', height: '500px', background: 'var(--primary-color)', 
+        top: '-150px', left: '-150px', filter: 'blur(120px)', opacity: 0.08 
+      }} />
+      <div className="blob" style={{ 
+        width: '400px', height: '400px', background: 'var(--secondary-color)', 
+        bottom: '-100px', right: '-100px', filter: 'blur(100px)', opacity: 0.08 
+      }} />
+
+      <div className="maternas-header">
         <div>
-          <h2 style={{ fontSize: '2rem', fontWeight: '800' }}>Seguimiento de Maternas</h2>
-          <p style={{ color: 'var(--text-muted)' }}>Censo y control de pacientes gestantes.</p>
+          <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', fontWeight: '900', letterSpacing: '-1px' }}>
+            Seguimiento de Maternas
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginTop: '6px' }}>Censo y control inteligente de pacientes gestantes.</p>
         </div>
-        <button 
+        <motion.button 
+          whileHover={{ scale: 1.05, boxShadow: 'var(--primary-glow) 0 12px 24px' }}
+          whileTap={{ scale: 0.95 }}
           onClick={(e) => handleOpenModal(e)}
           style={{ 
             background: 'var(--primary-color)', 
             color: 'white', 
-            padding: '12px 24px', 
+            padding: '14px 28px', 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '10px',
-            fontWeight: '600'
+            gap: '12px',
+            fontWeight: '800',
+            borderRadius: '20px',
+            boxShadow: 'var(--primary-glow) 0 8px 16px',
+            fontSize: '1rem',
+            whiteSpace: 'nowrap'
           }}
         >
           <Plus size={20} />
-          Registrar Materna
-        </button>
+          <span className="btn-text">Registrar Materna</span>
+        </motion.button>
       </div>
 
-      <div style={{ 
-        background: 'var(--card-bg)', 
-        borderRadius: '24px', 
-        boxShadow: 'var(--shadow)',
-        overflow: 'hidden'
-      }}>
-        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '15px' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={20} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+      <div className="organic-card" style={{ overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+          <div style={{ position: 'relative' }}>
+            <Search size={20} style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input 
               type="text" 
               placeholder="Buscar por nombre o documento..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '45px', background: 'var(--bg-color)', border: 'none' }}
+              style={{ 
+                paddingLeft: '50px', 
+                paddingRight: '20px',
+                paddingTop: '14px',
+                paddingBottom: '14px',
+                background: 'var(--bg-color)', 
+                border: '1px solid var(--border-color)',
+                fontSize: '1rem',
+                borderRadius: '16px',
+                width: '100%'
+              }}
             />
           </div>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        {/* Desktop: tabla */}
+        <div className="maternas-table-view" style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left', minWidth: '700px' }}>
             <thead>
-              <tr style={{ background: 'var(--bg-color)', color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: '700' }}>
+              <tr style={{ background: 'var(--bg-color)', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.5px' }}>
                 <th style={{ padding: '1.2rem 1.5rem' }}>PACIENTE</th>
                 <th style={{ padding: '1.2rem 1.5rem' }}>DOCUMENTO</th>
                 <th style={{ padding: '1.2rem 1.5rem' }}>F. EMBARAZO</th>
@@ -195,67 +204,110 @@ const Maternas = () => {
                 <tr 
                   key={m.id} 
                   onClick={() => handleOpenDetail(m)}
-                  style={{ borderBottom: '1px solid var(--border-color)', cursor: 'pointer', transition: 'background 0.2s' }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-color)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  style={{ cursor: 'pointer', transition: 'all 0.3s' }}
+                  className="table-row-hover"
                 >
-                  <td style={{ padding: '1.2rem 1.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ 
-                        width: '40px', height: '40px', borderRadius: '12px', background: 'var(--bg-color)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)'
-                      }}>
-                        <Baby size={20} />
+                  <td style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '16px', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', border: '2px solid var(--border-color)', flexShrink: 0 }}>
+                        <Baby size={22} />
                       </div>
                       <div>
-                        <p style={{ fontWeight: '600' }}>{m.nombre}</p>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                          Registrada por: {m.creadaPor?.nombre}
-                        </p>
+                        <p style={{ fontWeight: '800', fontSize: '1rem', color: 'var(--text-main)' }}>{m.nombre}</p>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>Por: {m.creadaPor?.nombre || 'Admin'}</p>
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: '1.2rem 1.5rem' }}>
-                    <p style={{ fontSize: '0.9rem', fontWeight: '500' }}>{m.tipoDocumento} {m.documento}</p>
+                  <td style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <p style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-main)' }}>{m.tipoDocumento} {m.documento}</p>
                   </td>
-                  <td style={{ padding: '1.2rem 1.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem' }}>
-                      <Calendar size={16} color="var(--text-muted)" />
+                  <td style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-main)' }}>
+                      <Calendar size={16} style={{ color: 'var(--text-muted)' }} />
                       {new Date(m.fechaEmbarazo).toLocaleDateString()}
                     </div>
                   </td>
-                  <td style={{ padding: '1.2rem 1.5rem' }}>
-                    <div style={{ 
-                      display: 'inline-flex', alignItems: 'center', gap: '6px', 
-                      padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800',
-                      background: `${getRiskColor(m.tipoRiesgo)}15`,
-                      color: getRiskColor(m.tipoRiesgo)
-                    }}>
-                      <AlertTriangle size={14} />
+                  <td style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '25px', fontSize: '0.78rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30` }}>
+                      <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: getRiskColor(m.tipoRiesgo) }} />
                       {m.tipoRiesgo}
                     </div>
                   </td>
-                  <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right' }}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                      <button onClick={(e) => handleOpenModal(e, m)} style={{ background: 'var(--bg-color)', padding: '8px', color: 'var(--text-muted)' }}>
-                        <Edit2 size={18} />
-                      </button>
-                      <button onClick={(e) => handleDelete(e, m.id)} style={{ background: 'var(--bg-color)', padding: '8px', color: '#ef4444' }}>
-                        <Trash2 size={18} />
-                      </button>
+                  <td style={{ padding: '1.2rem 1.5rem', textAlign: 'right', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                      <motion.button whileHover={{ scale: 1.1 }} onClick={(e) => handleOpenModal(e, m)} style={{ background: 'transparent', padding: '8px', color: 'var(--text-muted)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                        <Edit2 size={16} />
+                      </motion.button>
+                      <motion.button whileHover={{ scale: 1.1 }} onClick={(e) => handleDelete(e, m.id)} style={{ background: 'transparent', padding: '8px', color: 'var(--error-color)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                        <Trash2 size={16} />
+                      </motion.button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {filteredMaternas.length === 0 && (
-            <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-              <ClipboardList size={48} style={{ margin: '0 auto 1rem', opacity: 0.3 }} />
-              <p>No se encontraron pacientes maternas.</p>
-            </div>
-          )}
         </div>
+
+        {/* Móvil: cards */}
+        <div className="maternas-cards-view">
+          {filteredMaternas.map(m => (
+            <motion.div
+              key={m.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={() => handleOpenDetail(m)}
+              style={{
+                padding: '1.2rem',
+                borderBottom: '1px solid var(--border-color)',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', border: '2px solid var(--border-color)', flexShrink: 0 }}>
+                    <Baby size={20} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontWeight: '800', fontSize: '1rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nombre}</p>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{m.tipoDocumento} {m.documento}</p>
+                  </div>
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 12px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30`, flexShrink: 0 }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: getRiskColor(m.tipoRiesgo) }} />
+                  {m.tipoRiesgo}
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                  <Calendar size={14} />
+                  FUM: {new Date(m.fechaEmbarazo).toLocaleDateString()}
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <motion.button whileTap={{ scale: 0.9 }} onClick={(e) => handleOpenModal(e, m)} style={{ background: 'var(--bg-color)', padding: '8px', color: 'var(--text-muted)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                    <Edit2 size={15} />
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.9 }} onClick={(e) => handleDelete(e, m.id)} style={{ background: 'var(--bg-color)', padding: '8px', color: 'var(--error-color)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                    <Trash2 size={15} />
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {filteredMaternas.length === 0 && (
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+              <ClipboardList size={70} style={{ margin: '0 auto 1.5rem', opacity: 0.1 }} />
+              <h3 style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-main)', marginBottom: '0.5rem' }}>No hay resultados</h3>
+              <p>No se encontraron pacientes con esos criterios.</p>
+            </motion.div>
+          </div>
+        )}
       </div>
 
       {/* Modal Registro/Edición */}
@@ -263,127 +315,120 @@ const Maternas = () => {
         {isModalOpen && (
           <div style={{ 
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', 
-            background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-            padding: '20px'
+            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000,
+            padding: '0'
           }}>
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="organic-card modal-sheet"
               style={{ 
-                background: 'var(--card-bg)', width: '100%', maxWidth: '600px', borderRadius: '24px', padding: '2.5rem',
-                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto'
+                width: '100%', maxWidth: '700px',
+                padding: 'clamp(1.5rem, 5vw, 3rem)',
+                boxShadow: 'var(--shadow-xl)', maxHeight: '92vh', overflowY: 'auto',
+                borderRadius: '32px 32px 0 0',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>
-                  {currentMaterna ? 'Editar Registro' : 'Registrar Paciente Materna'}
-                </h3>
-                <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', color: 'var(--text-muted)' }}>
-                  <X size={24} />
-                </button>
+              {/* Handle */}
+              <div style={{ width: '40px', height: '4px', background: 'var(--border-color)', borderRadius: '2px', margin: '0 auto 2rem' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <div>
+                  <h3 style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)', fontWeight: '950', letterSpacing: '-1px', color: 'var(--text-main)' }}>
+                    {currentMaterna ? 'Editar Paciente' : 'Nueva Paciente'}
+                  </h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '4px' }}>Completa el perfil clínico para el seguimiento.</p>
+                </div>
+                <motion.button whileHover={{ scale: 1.1 }} onClick={() => setIsModalOpen(false)} style={{ background: 'var(--bg-color)', color: 'var(--text-muted)', padding: '10px', borderRadius: '50%', border: '1px solid var(--border-color)' }}>
+                  <X size={22} />
+                </motion.button>
               </div>
 
-              <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '6px', display: 'block' }}>Nombre Completo</label>
-                  <input 
-                    type="text" 
-                    value={formData.nombre}
-                    onChange={e => setFormData({...formData, nombre: e.target.value})}
-                    required
-                  />
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>NOMBRE COMPLETO</label>
+                  <input type="text" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} required placeholder="Ej. Maria Lopez" style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%' }} />
                 </div>
                 
-                <div>
-                  <label style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '6px', display: 'block' }}>Tipo Documento</label>
-                  <select 
-                    value={formData.tipoDocumento}
-                    onChange={e => setFormData({...formData, tipoDocumento: e.target.value})}
-                  >
-                    <option value="CC">Cédula de Ciudadanía</option>
-                    <option value="CE">Cédula de Extranjería</option>
-                    <option value="TI">Tarjeta de Identidad</option>
-                    <option value="RC">Registro Civil</option>
-                    <option value="PA">Pasaporte</option>
-                  </select>
+                <div className="form-grid-2">
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>TIPO DOCUMENTO</label>
+                    <select value={formData.tipoDocumento} onChange={e => setFormData({...formData, tipoDocumento: e.target.value})} style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%' }}>
+                      <option value="CC">Cédula de Ciudadanía</option>
+                      <option value="CE">Cédula de Extranjería</option>
+                      <option value="TI">Tarjeta de Identidad</option>
+                      <option value="RC">Registro Civil</option>
+                      <option value="PA">Pasaporte</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>NÚMERO DOCUMENTO</label>
+                    <input type="text" value={formData.documento} onChange={e => setFormData({...formData, documento: e.target.value})} required placeholder="12345678" style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>FECHA NACIMIENTO</label>
+                    <input type="date" value={formData.fechaNacimiento} onChange={e => setFormData({...formData, fechaNacimiento: e.target.value})} required style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>FECHA EMBARAZO (F.U.M)</label>
+                    <input type="date" value={formData.fechaEmbarazo} onChange={e => setFormData({...formData, fechaEmbarazo: e.target.value})} required style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%' }} />
+                  </div>
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '6px', display: 'block' }}>Documento</label>
-                  <input 
-                    type="text" 
-                    value={formData.documento}
-                    onChange={e => setFormData({...formData, documento: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '6px', display: 'block' }}>Fecha de Nacimiento</label>
-                  <input 
-                    type="date" 
-                    value={formData.fechaNacimiento}
-                    onChange={e => setFormData({...formData, fechaNacimiento: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '6px', display: 'block' }}>Fecha de Embarazo</label>
-                  <input 
-                    type="date" 
-                    value={formData.fechaEmbarazo}
-                    onChange={e => setFormData({...formData, fechaEmbarazo: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '6px', display: 'block' }}>Tipo de Riesgo</label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '14px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>NIVEL DE RIESGO CLÍNICO</label>
+                  <div style={{ display: 'flex', gap: '12px' }}>
                     {['BAJA', 'MEDIANA', 'ALTA'].map(risk => (
-                      <button
-                        key={risk}
-                        type="button"
-                        onClick={() => setFormData({...formData, tipoRiesgo: risk})}
-                        style={{
-                          flex: 1,
-                          padding: '10px',
-                          borderRadius: '12px',
-                          border: '2px solid',
-                          borderColor: formData.tipoRiesgo === risk ? getRiskColor(risk) : 'var(--border-color)',
-                          background: formData.tipoRiesgo === risk ? `${getRiskColor(risk)}10` : 'transparent',
-                          color: formData.tipoRiesgo === risk ? getRiskColor(risk) : 'var(--text-muted)',
-                          fontWeight: '700',
-                          fontSize: '0.8rem'
-                        }}
+                      <motion.button key={risk} type="button" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setFormData({...formData, tipoRiesgo: risk})}
+                        style={{ flex: 1, padding: '14px', borderRadius: '18px', border: '2px solid', borderColor: formData.tipoRiesgo === risk ? getRiskColor(risk) : 'var(--border-color)', background: formData.tipoRiesgo === risk ? `${getRiskColor(risk)}15` : 'var(--bg-color)', color: formData.tipoRiesgo === risk ? getRiskColor(risk) : 'var(--text-muted)', fontWeight: '900', fontSize: '0.85rem', cursor: 'pointer' }}
                       >
                         {risk}
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
                 
-                <button 
-                  type="submit" 
-                  style={{ 
-                    gridColumn: 'span 2', 
-                    background: 'var(--primary-color)', 
-                    color: 'white', 
-                    padding: '14px', 
-                    fontWeight: '700', 
-                    marginTop: '1rem',
-                    boxShadow: '0 10px 15px -3px rgba(233, 30, 140, 0.3)'
-                  }}
+                <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                  style={{ background: 'var(--primary-color)', color: 'white', padding: '18px', fontWeight: '900', borderRadius: '20px', fontSize: '1rem', boxShadow: 'var(--primary-glow) 0 10px 20px' }}
                 >
-                  {currentMaterna ? 'Guardar Cambios' : 'Registrar Paciente'}
-                </button>
+                  {currentMaterna ? 'Guardar Cambios' : 'Finalizar Registro'}
+                </motion.button>
               </form>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+      <style>{`
+        .maternas-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 2rem;
+          flex-wrap: wrap;
+          gap: 16px;
+          position: relative;
+          zIndex: 1;
+        }
+        .maternas-table-view { display: block; }
+        .maternas-cards-view { display: none; }
+        .form-grid-2 {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.2rem;
+        }
+        .table-row-hover:hover {
+          background: var(--card-bg-hover) !important;
+        }
+        @media (max-width: 768px) {
+          .maternas-table-view { display: none; }
+          .maternas-cards-view { display: block; }
+          .form-grid-2 { grid-template-columns: 1fr; }
+          .btn-text { display: none; }
+          .modal-sheet { border-radius: 28px 28px 0 0 !important; }
+        }
+      `}</style>
     </div>
   );
 };

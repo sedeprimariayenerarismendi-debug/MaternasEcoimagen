@@ -8,6 +8,7 @@
   "scripts": {
     "build": "npm run build --workspace=frontend",
     "start": "npm start --workspace=backend",
+    "dev": "npm run dev --workspace=backend & npm run dev --workspace=frontend",
     "seed": "npm run db:seed --workspace=backend"
   }
 }

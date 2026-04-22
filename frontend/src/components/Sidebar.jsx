@@ -10,6 +10,7 @@ import {
   Baby,
   ChevronRight
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
@@ -34,45 +35,56 @@ const Sidebar = () => {
       top: 0,
       background: 'var(--card-bg)',
       borderRight: '1px solid var(--border-color)',
-      padding: '2rem 1.5rem',
+      padding: '2.5rem 1.8rem',
       display: 'flex',
       flexDirection: 'column',
-      zIndex: 100
+      zIndex: 100,
+      boxShadow: '4px 0 20px rgba(0,0,0,0.02)'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '3rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '4px' }}>
         <div style={{ 
           background: 'var(--primary-color)', 
-          padding: '8px', 
-          borderRadius: '12px',
-          color: 'white'
+          padding: '10px', 
+          borderRadius: '16px',
+          color: 'white',
+          boxShadow: 'var(--primary-glow) 0 4px 10px'
         }}>
-          <Baby size={28} />
+          <Baby size={30} />
         </div>
-        <h1 style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{config.clinicName}</h1>
+        <h1 style={{ fontSize: '1.4rem', fontWeight: '950', letterSpacing: '-1px', color: 'var(--text-main)' }}>{config.clinicName}</h1>
       </div>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '3.5rem', marginLeft: '50px' }}>Clinical Suite</p>
 
-      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {filteredMenu.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
-            style={({ isActive }) => ({
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px 16px',
-              borderRadius: 'var(--radius)',
-              textDecoration: 'none',
-              color: isActive ? 'white' : 'var(--text-muted)',
-              background: isActive ? 'var(--primary-color)' : 'transparent',
-              transition: 'all 0.3s ease',
-              boxShadow: isActive ? '0 4px 12px rgba(233, 30, 140, 0.3)' : 'none'
-            })}
           >
-            <item.icon size={20} />
-            <span style={{ fontWeight: '500' }}>{item.name}</span>
-            {menuItems.find(i => i.path === item.path)?.path === window.location.pathname && (
-              <ChevronRight size={16} style={{ marginLeft: 'auto' }} />
+            {({ isActive }) => (
+              <span style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                padding: '14px 18px',
+                borderRadius: '20px',
+                textDecoration: 'none',
+                color: isActive ? 'white' : 'var(--text-muted)',
+                background: isActive ? 'var(--primary-color)' : 'transparent',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: isActive ? 'var(--primary-glow) 0 8px 16px' : 'none',
+                fontWeight: isActive ? '800' : '600',
+                fontSize: '0.95rem',
+                width: '100%'
+              }}>
+                <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                <span>{item.name}</span>
+                {isActive && (
+                  <motion.div layoutId="sidebar-active" style={{ marginLeft: 'auto' }}>
+                    <ChevronRight size={18} />
+                  </motion.div>
+                )}
+              </span>
             )}
           </NavLink>
         ))}
@@ -80,51 +92,58 @@ const Sidebar = () => {
 
       <div style={{ 
         marginTop: 'auto', 
-        paddingTop: '2rem', 
-        borderTop: '1px solid var(--border-color)',
+        paddingTop: '2.5rem', 
+        borderTop: '2px solid var(--border-color)',
         display: 'flex',
         flexDirection: 'column',
-        gap: '15px'
+        gap: '20px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '0 8px' }}>
           <div style={{ 
-            width: '40px', 
-            height: '40px', 
-            borderRadius: '50%', 
+            width: '48px', 
+            height: '48px', 
+            borderRadius: '18px', 
             background: 'var(--secondary-color)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: 'white',
-            fontWeight: 'bold'
+            fontWeight: '900',
+            fontSize: '1.2rem',
+            boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)'
           }}>
             {user?.nombre?.charAt(0)}
           </div>
           <div style={{ overflow: 'hidden' }}>
-            <p style={{ fontWeight: '600', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <p style={{ fontWeight: '800', fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-main)', letterSpacing: '-0.3px' }}>
               {user?.nombre}
             </p>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user?.rol}</p>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{user?.rol}</p>
           </div>
         </div>
         
-        <button 
+        <motion.button 
+          whileHover={{ scale: 1.02, backgroundColor: 'rgba(239, 68, 68, 0.15)' }}
+          whileTap={{ scale: 0.98 }}
           onClick={logout}
           style={{
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: '12px',
-            padding: '12px 16px',
+            padding: '15px',
             width: '100%',
-            background: 'rgba(239, 68, 68, 0.1)',
+            background: 'rgba(239, 68, 68, 0.08)',
             color: '#ef4444',
-            fontWeight: '600',
-            fontSize: '0.9rem'
+            fontWeight: '800',
+            fontSize: '0.9rem',
+            borderRadius: '18px',
+            border: '1px solid rgba(239, 68, 68, 0.1)'
           }}
         >
           <LogOut size={20} />
           Cerrar Sesión
-        </button>
+        </motion.button>
       </div>
     </aside>
   );
