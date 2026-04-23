@@ -52,6 +52,7 @@ const Paquetes = () => {
         nombre: paquete.nombre,
         descripcion: paquete.descripcion || '',
         plantillas: paquete.plantillas.map(p => ({
+          id: p.id,
           tipo: p.tipo,
           descripcion: p.descripcion,
           semanasRelativas: p.semanasRelativas,
@@ -80,7 +81,7 @@ const Paquetes = () => {
       ...formData,
       plantillas: [
         ...formData.plantillas,
-        { tipo: 'ESTUDIO', descripcion: '', semanasRelativas: 0, esObligatorio: false, esControl: false, cantidad: 1, trimestre: '' }
+        { id: null, tipo: 'ESTUDIO', descripcion: '', semanasRelativas: 0, esObligatorio: false, esControl: false, cantidad: 1, trimestre: '' }
       ]
     });
   };

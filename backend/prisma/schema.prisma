@@ -56,6 +56,9 @@ model EventoMedico {
   notas           String?
   cantidad        Int?     @default(1)
   trimestre       String?
+  paqueteId       Int?
+  plantillaId     Int?
+  plantilla       PlantillaEvento? @relation(fields: [plantillaId], references: [id], onDelete: SetNull)
   maternaId       Int
   materna         Materna  @relation(fields: [maternaId], references: [id])
   createdAt       DateTime @default(now())
@@ -84,6 +87,7 @@ model PlantillaEvento {
   trimestre        String?
   paqueteId        Int
   paquete          PaqueteEventos @relation(fields: [paqueteId], references: [id], onDelete: Cascade)
+  eventos          EventoMedico[]
 }
 
 model Prestador {

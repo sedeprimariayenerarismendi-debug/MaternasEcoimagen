@@ -59,15 +59,17 @@ const Dashboard = () => {
       const res = await api.get('/maternas');
       const maternas = res.data;
       
-      const alarmas = [];
-      let citasHoy = 0;
-      let enSeguimiento = 0;
       const hoy = new Date();
       hoy.setHours(0,0,0,0);
+
+      const alarmasMap = {};
+      let citasHoy = 0;
+      let enSeguimiento = 0;
 
       maternas.forEach(m => {
         if (m.eventos && m.eventos.length > 0) {
           enSeguimiento++;
+          
           m.eventos.forEach(e => {
             const fechaE = new Date(e.fechaProgramada);
             fechaE.setHours(0,0,0,0);
@@ -77,41 +79,47 @@ const Dashboard = () => {
               citasHoy++;
             }
 
-            // Lógica de Alarmas de Agendamiento — TODOS los pendientes sin agendar
+            // Lógica de Alarmas de Agendamiento
             if (e.estado === 'PENDIENTE' && !e.estaAgendado) {
               const diffTime = fechaE - hoy;
               const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-              let urgencia = 'PENDIENTE';
-              let msg = `En ${diffDays} días`;
+              if (!alarmasMap[m.id] || diffDays < alarmasMap[m.id].diffDays) {
+                let urgencia = 'PENDIENTE';
+                let msgStatus = `En ${diffDays} días`;
 
-              if (diffDays <= 0)              { urgencia = 'VENCIDA';   msg = 'Agendamiento vencido'; }
-              else if (diffDays === 1)         { urgencia = 'URGENTE';   msg = 'Agendar para mañana'; }
-              else if (diffDays <= 5)          { urgencia = 'MEDIA';     msg = `Agendar en ${diffDays} días`; }
-              else if (diffDays <= 15)         { urgencia = 'BAJA';      msg = `Agendar en ${diffDays} días`; }
-              // diffDays > 15 → urgencia = 'PENDIENTE', msg ya asignado arriba
+                if (diffDays <= 0)              { urgencia = 'VENCIDA';   msgStatus = 'Agendamiento vencido'; }
+                else if (diffDays === 1)         { urgencia = 'URGENTE';   msgStatus = 'Agendar para mañana'; }
+                else if (diffDays <= 5)          { urgencia = 'MEDIA';     msgStatus = `Agendar en ${diffDays} días`; }
+                else if (diffDays <= 15)         { urgencia = 'BAJA';      msgStatus = `Agendar en ${diffDays} días`; }
 
-              alarmas.push({
-                id: e.id,
-                materna: m.nombre,
-                maternaId: m.id,
-                descripcion: e.descripcion,
-                urgencia,
-                msg,
-                diffDays
-              });
+                alarmasMap[m.id] = {
+                  id: m.id,
+                  materna: m.nombre,
+                  maternaId: m.id,
+                  urgencia,
+                  msgStatus,
+                  diffDays,
+                  pendingCount: (alarmasMap[m.id]?.pendingCount || 0) + 1,
+                  mainDescription: e.descripcion
+                };
+              } else {
+                alarmasMap[m.id].pendingCount++;
+              }
             }
           });
         }
       });
 
+      const alarmasArr = Object.values(alarmasMap);
+
       // Ordenar alarmas por urgencia (días restantes)
-      alarmas.sort((a, b) => a.diffDays - b.diffDays);
+      alarmasArr.sort((a, b) => a.diffDays - b.diffDays);
 
       setData({
         maternas,
-        alarmas: alarmas.slice(0, 5), // Mostrar top 5
-        totalAlarmas: alarmas.length,
+        alarmas: alarmasArr.slice(0, 6), // Mostrar top 6 pacientes con alertas
+        totalAlarmas: alarmasArr.length,
         stats: {
           total: maternas.length,
           hoy: citasHoy,
@@ -244,38 +252,44 @@ const Dashboard = () => {
                   Sin alarmas pendientes.
               </div>
           ) : (
-              data.alarmas.map(a => (
-                <motion.div 
-                  key={a.id} 
-                  whileHover={{ x: 5 }}
-                  style={{ 
-                    padding: '12px', 
-                    borderRadius: '16px', 
-                    background: 'var(--bg-color)',
-                    display: 'flex',
-                    gap: '12px',
-                    alignItems: 'center',
-                    border: '1px solid var(--border-color)',
-                  }}
-                >
-                  <div style={{ 
-                    width: '10px', 
-                    height: '10px', 
-                    borderRadius: '50%', 
-                    background: getUrgenciaColor(a.urgencia),
-                    boxShadow: `${getUrgenciaColor(a.urgencia)}00 0 0 4px`,
-                  }} />
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontWeight: '800', fontSize: '0.85rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.materna}</p>
-                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{a.descripcion}</p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '0.65rem', fontWeight: '900', color: getUrgenciaColor(a.urgencia), background: `${getUrgenciaColor(a.urgencia)}15`, padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
-                        {a.msg}
-                    </span>
-                  </div>
-                </motion.div>
-              ))
+              <div style={{ display: 'grid', gap: '10px' }}>
+                {data.alarmas.map(a => (
+                  <motion.div 
+                    key={a.id} 
+                    whileHover={{ x: 5 }}
+                    style={{ 
+                      padding: '12px 15px', 
+                      borderRadius: '16px', 
+                      background: 'var(--bg-color)',
+                      display: 'flex',
+                      gap: '12px',
+                      alignItems: 'center',
+                      border: '1px solid var(--border-color)',
+                    }}
+                  >
+                    <div style={{ 
+                      width: '10px', 
+                      height: '10px', 
+                      borderRadius: '50%', 
+                      background: getUrgenciaColor(a.urgencia),
+                      flexShrink: 0
+                    }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: '800', fontSize: '0.85rem', color: 'var(--text-main)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.materna}</p>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: 0 }}>
+                        {a.pendingCount > 1 
+                          ? `${a.pendingCount} actividades (Próx: ${a.mainDescription})` 
+                          : a.mainDescription}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: '900', color: getUrgenciaColor(a.urgencia), background: `${getUrgenciaColor(a.urgencia)}15`, padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
+                          {a.msgStatus}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
           )}
 
           <motion.button 
