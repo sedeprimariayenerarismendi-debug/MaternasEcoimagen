@@ -7,6 +7,7 @@ import {
   Plus, 
   Trash2, 
   AlertCircle,
+  AlertTriangle,
   FileText,
   Stethoscope,
   ChevronRight,
@@ -33,6 +34,13 @@ const MedicalEvents = ({ maternaId }) => {
   const [paquetes, setPaquetesDisponibles] = useState([]);
   const [prestadoresList, setPrestadoresList] = useState([]);
   const [newPrestadorName, setNewPrestadorName] = useState('');
+  const [currentTrimester, setCurrentTrimester] = useState(null);
+  const [showAllTrimesters, setShowAllTrimesters] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [scheduleSearch, setScheduleSearch] = useState('');
+  const [historySearch, setHistorySearch] = useState('');
+  const [visibleLimit, setVisibleLimit] = useState(6);
+  const [historyVisibleLimit, setHistoryVisibleLimit] = useState(10);
   
   // States for Completion Modal
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
@@ -51,6 +59,7 @@ const MedicalEvents = ({ maternaId }) => {
     notas: '',
     codigoCUPS: '',
     cantidad: 1,
+    trimestre: '',
     prestadoresIds: []
   });
 
@@ -72,16 +81,33 @@ const MedicalEvents = ({ maternaId }) => {
     fetchEventos();
     const fetchExtras = async () => {
         try {
-            const [pRes, prRes] = await Promise.all([
+            const [pRes, prRes, mRes] = await Promise.all([
                 api.get('/paquetes'),
-                api.get('/prestadores')
+                api.get('/prestadores'),
+                api.get('/maternas')
             ]);
             setPaquetesDisponibles(pRes.data);
             setPrestadoresList(prRes.data);
+            
+            const materna = mRes.data.find(m => m.id === parseInt(maternaId));
+            if (materna) {
+                const trimester = calculateTrimesterStatus(materna.fechaEmbarazo);
+                setCurrentTrimester(trimester);
+            }
         } catch (err) { console.error(err); }
     };
     fetchExtras();
   }, [maternaId]);
+
+  const calculateTrimesterStatus = (date) => {
+    const start = new Date(date);
+    const now = new Date();
+    const diffDays = Math.ceil(Math.abs(now - start) / (1000 * 60 * 60 * 24));
+    const weeks = Math.floor(diffDays / 7);
+    if (weeks <= 13) return "1er Trimestre";
+    if (weeks <= 26) return "2do Trimestre";
+    return "3er Trimestre";
+  };
 
   const handleCreateEvent = async (e) => {
     e.preventDefault();
@@ -94,7 +120,7 @@ const MedicalEvents = ({ maternaId }) => {
       await api.post('/eventos', dataToSend);
       setIsModalOpen(false);
       fetchEventos();
-      setFormData({ tipo: 'ESTUDIO', descripcion: '', fechaProgramada: '', esObligatorio: false, esControl: false, notas: '', codigoCUPS: '', cantidad: 1, prestadoresIds: [] });
+      setFormData({ tipo: 'ESTUDIO', descripcion: '', fechaProgramada: '', esObligatorio: false, esControl: false, notas: '', codigoCUPS: '', cantidad: 1, trimestre: '', prestadoresIds: [] });
     } catch (err) {
       notify('Error al crear evento', 'error');
     }
@@ -298,6 +324,36 @@ const MedicalEvents = ({ maternaId }) => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    const ok = await confirm({
+        title: '¿Eliminar Seleccionados?',
+        message: `Se eliminarán ${selectedIds.length} eventos de forma permanente.`,
+        confirmText: 'Eliminar todos',
+        type: 'danger'
+    });
+    if (ok) {
+        try {
+            await api.post('/eventos/bulk-delete', { ids: selectedIds });
+            notify(`${selectedIds.length} eventos eliminados`);
+            setSelectedIds([]);
+            fetchEventos();
+        } catch (err) {
+            notify('Error al eliminar eventos en bloque', 'error');
+        }
+    }
+  };
+
+  const handleToggleSelection = (id) => {
+      setSelectedIds(prev => 
+          prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+      );
+  };
+
+  const handleSelectAll = (filteredIds) => {
+      if (selectedIds.length === filteredIds.length) setSelectedIds([]);
+      else setSelectedIds(filteredIds);
+  };
+
   const handleToggleControl = async (evento) => {
     try {
         await api.patch(`/eventos/${evento.id}`, { esControl: !evento.esControl });
@@ -350,6 +406,41 @@ const MedicalEvents = ({ maternaId }) => {
   const pendientes = eventos.filter(e => e.estado === 'PENDIENTE');
   const realizados = eventos.filter(e => e.estado === 'REALIZADO');
 
+  const getFilteredEvents = () => {
+    let baseEvents = activeTab === 'pendientes' ? pendientes : realizados;
+    let filtered = baseEvents;
+    
+    if (activeTab === 'pendientes') {
+        if (!showAllTrimesters && currentTrimester) {
+            filtered = filtered.filter(e => !e.trimestre || e.trimestre === currentTrimester);
+        }
+        if (scheduleSearch) {
+            filtered = filtered.filter(e => 
+                e.descripcion.toLowerCase().includes(scheduleSearch.toLowerCase()) ||
+                e.tipo.toLowerCase().includes(scheduleSearch.toLowerCase())
+            );
+        }
+    } else if (activeTab === 'historia') {
+        if (historySearch) {
+            filtered = filtered.filter(e => 
+                e.descripcion.toLowerCase().includes(historySearch.toLowerCase()) ||
+                e.tipo.toLowerCase().includes(historySearch.toLowerCase())
+            );
+        }
+    }
+    return filtered;
+  };
+
+  const filteredPendientes = activeTab === 'pendientes' ? getFilteredEvents() : [];
+  const visiblePendientes = filteredPendientes.slice(0, visibleLimit);
+  
+  const filteredHistory = activeTab === 'historia' ? getFilteredEvents() : [];
+  const visibleHistory = filteredHistory.slice(0, historyVisibleLimit);
+
+  const hiddenCount = pendientes.length - filteredPendientes.length;
+  const hasMore = filteredPendientes.length > visibleLimit;
+  const hasMoreHistory = filteredHistory.length > historyVisibleLimit;
+
   if (loading) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Cargando eventos...</div>;
 
   return (
@@ -394,12 +485,54 @@ const MedicalEvents = ({ maternaId }) => {
         </div>
       </div>
 
+      {/* Trimester Filter Info */}
+      {currentTrimester && (
+          <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              padding: '12px 16px', 
+              background: 'var(--primary-color)05', 
+              borderRadius: '16px', 
+              border: '1px solid var(--primary-color)15' 
+          }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ padding: '8px', background: 'var(--primary-color)15', borderRadius: '10px', color: 'var(--primary-color)' }}>
+                      <Clock size={16} />
+                  </div>
+                  <div>
+                      <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '950', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Etapa Actual</p>
+                      <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: '900', color: 'var(--text-main)' }}>{currentTrimester}</p>
+                  </div>
+              </div>
+              <button 
+                onClick={() => setShowAllTrimesters(!showAllTrimesters)}
+                style={{ 
+                    background: showAllTrimesters ? 'var(--primary-color)' : 'transparent', 
+                    color: showAllTrimesters ? 'white' : 'var(--primary-color)',
+                    border: '1px solid var(--primary-color)',
+                    padding: '6px 14px',
+                    borderRadius: '10px',
+                    fontSize: '0.72rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                }}
+              >
+                  {showAllTrimesters ? 'Ver Enfocado' : 'Ver Todo'}
+              </button>
+          </div>
+      )}
+
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '10px', background: 'var(--bg-color)', padding: '6px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
          {['pendientes', 'historia', 'laboratorios', 'metas'].map(tab => (
            <button 
              key={tab}
-             onClick={() => setActiveTab(tab)}
+             onClick={() => {
+                 setActiveTab(tab);
+                 setSelectedIds([]); // Limpiar selección al cambiar de pestaña
+             }}
              style={{
                flex: 1,
                background: activeTab === tab ? 'var(--primary-color)' : 'transparent',
@@ -426,113 +559,184 @@ const MedicalEvents = ({ maternaId }) => {
               exit={{ opacity: 0, x: -20 }}
               style={{ display: 'grid', gap: '1rem' }}
             >
-              {pendientes.length === 0 ? (
+              {filteredPendientes.length === 0 ? (
                   <div style={{ padding: '3rem 2rem', textAlign: 'center', background: 'var(--bg-color)', borderRadius: '20px', border: '1px dashed var(--border-color)', color: 'var(--text-muted)' }}>
                       <Clock size={40} style={{ opacity: 0.2, marginBottom: '1rem' }} />
-                      <p style={{ margin: 0, fontWeight: '700' }}>No hay actividades pendientes</p>
+                      <p style={{ margin: 0, fontWeight: '700' }}>No se encontraron actividades</p>
+                      {!showAllTrimesters && hiddenCount > 0 && (
+                          <button 
+                            onClick={() => setShowAllTrimesters(true)}
+                            style={{ background: 'none', border: 'none', color: 'var(--primary-color)', fontWeight: '800', fontSize: '0.8rem', marginTop: '10px', cursor: 'pointer', textDecoration: 'underline' }}
+                          >
+                            Ver otras etapas gestacionales
+                          </button>
+                      )}
                   </div>
               ) : (
-                  pendientes.map(evento => (
-                    <motion.div 
-                      key={evento.id}
-                      layoutId={`event-${evento.id}`}
-                      className="organic-card"
-                      style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border-color)' }}
-                    >
-                      <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: `${getEventColor(evento.tipo)}15`, color: getEventColor(evento.tipo), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {getEventIcon(evento.tipo)}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '900', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          {evento.descripcion}
-                          {evento.esObligatorio && <AlertCircle size={14} style={{ color: 'var(--error-color)' }} />}
-                          {evento.tipo === 'CONSULTA' && evento.cantidad > 1 && (
-                            <span style={{ fontSize: '0.6rem', fontWeight: '900', background: 'var(--primary-color)15', color: 'var(--primary-color)', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>Min: {evento.cantidad}</span>
-                          )}
-                        </h4>
-                        <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Calendar size={12} /> {new Date(evento.fechaProgramada).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}
-                        </p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                onClick={(e) => { e.stopPropagation(); handleToggleControl(evento); }}
+                  <div style={{ display: 'grid', gap: '1rem' }}>
+                    {/* Toolbar for table */}
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                            <input 
+                                type="text" 
+                                placeholder="Buscar en el cronograma..." 
+                                value={scheduleSearch}
+                                onChange={(e) => setScheduleSearch(e.target.value)}
                                 style={{ 
-                                    fontSize: '0.6rem', fontWeight: '900', 
-                                    background: evento.esControl ? 'var(--secondary-color)' : 'var(--bg-color)', 
-                                    color: evento.esControl ? 'white' : 'var(--text-muted)', 
-                                    padding: '2px 8px', borderRadius: '6px', cursor: 'pointer',
-                                    border: '1px solid var(--border-color)'
+                                    padding: '10px 15px', borderRadius: '12px', border: '1px solid var(--border-color)', 
+                                    width: '100%', fontSize: '0.85rem', background: 'white' 
                                 }}
-                            >
-                                {!!evento.esControl || evento.tipo === 'CITA' ? 'ES CONTROL' : 'MARCAR CONTROL'}
-                            </motion.button>
-                            {(!!evento.esControl || evento.tipo === 'CITA') && (
-                                <span style={{ fontSize: '0.6rem', fontWeight: '900', color: 'var(--secondary-color)', background: 'var(--secondary-color)15', padding: '2px 8px', borderRadius: '6px' }}>
-                                    SEGUIMIENTO
-                                </span>
-                            )}
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                onClick={(e) => { e.stopPropagation(); handleToggleAgendado(evento); }}
-                                style={{ 
-                                    fontSize: '0.6rem', fontWeight: '900', 
-                                    background: evento.estaAgendado ? 'var(--success-color)' : 'var(--bg-color)', 
-                                    color: evento.estaAgendado ? 'white' : 'var(--text-muted)', 
-                                    padding: '2px 8px', borderRadius: '6px', cursor: 'pointer',
-                                    border: '1px solid var(--border-color)',
-                                    display: 'flex', alignItems: 'center', gap: '4px'
-                                }}
-                            >
-                                <Bell size={10} />
-                                {evento.estaAgendado ? 'AGENDADO' : 'AGENDAR'}
-                            </motion.button>
-                            {evento.estaAgendado && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <Calendar size={10} style={{ color: 'var(--success-color)', flexShrink: 0 }} />
-                                    <input
-                                        type="date"
-                                        defaultValue={evento.fechaAgendamiento ? new Date(evento.fechaAgendamiento).toISOString().split('T')[0] : ''}
-                                        onClick={(e) => e.stopPropagation()}
-                                        onChange={(e) => handleFechaAgendamiento(evento, e.target.value)}
-                                        title="Fecha en que se agendó la cita"
-                                        style={{
-                                            fontSize: '0.6rem',
-                                            fontWeight: '800',
-                                            border: '1px solid var(--success-color)50',
-                                            borderRadius: '6px',
-                                            padding: '2px 6px',
-                                            background: 'var(--success-color)10',
-                                            color: 'var(--success-color)',
-                                            cursor: 'pointer',
-                                            outline: 'none',
-                                            width: '108px',
-                                        }}
-                                    />
-                                </div>
-                            )}
+                            />
                         </div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <motion.button 
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => handleDelete(evento.id)}
-                          style={{ padding: '12px', borderRadius: '15px', background: 'var(--card-bg)', color: 'var(--error-color)', border: '1px solid var(--border-color)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                          <Trash2 size={18} />
-                        </motion.button>
-                        <motion.button 
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => handleToggleEstado(evento.id, 'PENDIENTE')}
-                          style={{ padding: '12px', borderRadius: '15px', background: 'var(--success-color)', color: 'white', border: 'none', cursor: 'pointer', boxShadow: 'var(--success-color)40 0 10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                          <CheckCircle size={20} />
-                        </motion.button>
-                      </div>
-                    </motion.div>
-                  ))
+                        {selectedIds.length > 0 && (
+                            <motion.button 
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                onClick={handleBulkDelete}
+                                style={{ 
+                                    background: 'var(--error-color)15', color: 'var(--error-color)',
+                                    padding: '10px 15px', borderRadius: '12px', border: '1px solid var(--error-color)30',
+                                    fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: '8px'
+                                }}
+                            >
+                                <Trash2 size={14} />
+                                Eliminar ({selectedIds.length})
+                            </motion.button>
+                        )}
+                    </div>
+
+                    <div className="organic-card" style={{ padding: '0', overflowX: 'auto', border: '1px solid var(--border-color)' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
+                            <thead>
+                                <tr style={{ background: 'var(--bg-color)', borderBottom: '1px solid var(--border-color)' }}>
+                                    <th style={{ padding: '12px 15px', width: '40px' }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedIds.length === filteredPendientes.length && filteredPendientes.length > 0}
+                                            onChange={() => handleSelectAll(filteredPendientes.map(e => e.id))}
+                                            style={{ cursor: 'pointer' }}
+                                        />
+                                    </th>
+                                    <th style={{ padding: '12px 15px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Evento</th>
+                                    <th style={{ padding: '12px 15px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Trimestre</th>
+                                    <th style={{ padding: '12px 15px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fecha</th>
+                                    <th style={{ padding: '12px 15px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Estado / Gestión</th>
+                                    <th style={{ padding: '12px 15px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {visiblePendientes.map(evento => {
+                                    const isCurrentTrimester = evento.trimestre === currentTrimester;
+                                    return (
+                                        <tr 
+                                            key={evento.id} 
+                                            style={{ 
+                                                borderBottom: '1px solid var(--border-color)',
+                                                background: isCurrentTrimester ? 'var(--primary-color)02' : 'transparent',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            className="table-row-hover"
+                                        >
+                                            <td style={{ padding: '12px 15px' }}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={selectedIds.includes(evento.id)}
+                                                    onChange={() => handleToggleSelection(evento.id)}
+                                                    style={{ cursor: 'pointer' }}
+                                                />
+                                            </td>
+                                            <td style={{ padding: '12px 15px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <div style={{ padding: '6px', borderRadius: '8px', background: `${getEventColor(evento.tipo)}15`, color: getEventColor(evento.tipo) }}>
+                                                        {getEventIcon(evento.tipo)}
+                                                    </div>
+                                                    <div>
+                                                        <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                            {evento.descripcion}
+                                                            {evento.esObligatorio && <AlertTriangle size={12} style={{ color: 'var(--error-color)' }} />}
+                                                        </p>
+                                                        {evento.codigoCUPS && <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--text-muted)' }}>CUPS: {evento.codigoCUPS}</p>}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '12px 15px' }}>
+                                                {evento.trimestre ? (
+                                                    <span style={{ 
+                                                        fontSize: '0.65rem', fontWeight: '900', 
+                                                        background: isCurrentTrimester ? 'var(--primary-color)' : 'var(--bg-color)', 
+                                                        color: isCurrentTrimester ? 'white' : 'var(--text-muted)', 
+                                                        padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase',
+                                                        border: isCurrentTrimester ? 'none' : '1px solid var(--border-color)'
+                                                    }}>
+                                                        {evento.trimestre.replace(' Trimestre', '')}
+                                                    </span>
+                                                ) : <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>-</span>}
+                                            </td>
+                                            <td style={{ padding: '12px 15px' }}>
+                                                <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-main)' }}>{new Date(evento.fechaProgramada).toLocaleDateString()}</p>
+                                            </td>
+                                            <td style={{ padding: '12px 15px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                                    <button
+                                                        onClick={() => handleToggleAgendado(evento)}
+                                                        style={{ 
+                                                            fontSize: '0.6rem', fontWeight: '900', 
+                                                            background: evento.estaAgendado ? 'var(--success-color)' : 'var(--bg-color)', 
+                                                            color: evento.estaAgendado ? 'white' : 'var(--text-muted)', 
+                                                            padding: '2px 8px', borderRadius: '6px', cursor: 'pointer',
+                                                            border: '1px solid var(--border-color)',
+                                                            display: 'flex', alignItems: 'center', gap: '4px'
+                                                        }}
+                                                    >
+                                                        <Bell size={10} />
+                                                        {evento.estaAgendado ? 'AGENDADO' : 'AGENDAR'}
+                                                    </button>
+                                                    
+                                                    {evento.tipo === 'CONSULTA' && (
+                                                        <button
+                                                            onClick={() => handleToggleControl(evento)}
+                                                            style={{ 
+                                                                fontSize: '0.6rem', fontWeight: '900', 
+                                                                background: evento.esControl ? 'var(--secondary-color)' : 'var(--bg-color)', 
+                                                                color: evento.esControl ? 'white' : 'var(--text-muted)', 
+                                                                padding: '2px 8px', borderRadius: '6px', cursor: 'pointer',
+                                                                border: '1px solid var(--border-color)'
+                                                            }}
+                                                        >
+                                                            {evento.esControl ? 'CONTROL' : 'MARCAR'}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '12px 15px', textAlign: 'right' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                                                    <button onClick={() => handleDelete(evento.id)} style={{ p: '6px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', opacity: 0.6 }} title="Eliminar"><Trash2 size={16} /></button>
+                                                    <button onClick={() => handleToggleEstado(evento.id, 'PENDIENTE')} style={{ padding: '6px', borderRadius: '8px', background: 'var(--success-color)10', color: 'var(--success-color)', border: 'none', cursor: 'pointer' }} title="Marcar Realizado"><CheckCircle size={18} /></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {hasMore && (
+                        <div style={{ textAlign: 'center', marginTop: '5px' }}>
+                            <button 
+                                onClick={() => setVisibleLimit(prev => prev + 10)}
+                                style={{ 
+                                    background: 'var(--bg-color)', border: '1px solid var(--border-color)', 
+                                    padding: '8px 20px', borderRadius: '12px', fontSize: '0.8rem', 
+                                    fontWeight: '800', color: 'var(--primary-color)', cursor: 'pointer' 
+                                }}
+                            >
+                                Ver más actividades
+                            </button>
+                        </div>
+                    )}
+                  </div>
               )}
             </motion.div>
           )}
@@ -543,31 +747,123 @@ const MedicalEvents = ({ maternaId }) => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              style={{ display: 'grid', gap: '0.8rem' }}
+              style={{ display: 'grid', gap: '1rem' }}
             >
                 {realizados.length === 0 ? (
-                    <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>Historial vacío</div>
+                    <div style={{ padding: '3rem', textAlign: 'center', background: 'var(--bg-color)', borderRadius: '20px', border: '1px dashed var(--border-color)', color: 'var(--text-muted)' }}>Historial vacío</div>
                 ) : (
-                    realizados.map(evento => (
-                        <div key={evento.id} style={{ padding: '0.8rem 1.2rem', borderRadius: '16px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                            <div style={{ color: 'var(--success-color)', opacity: 0.8 }}><CheckCircle size={18} /></div>
-                            <div style={{ flex: 1 }}>
-                                <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)', textDecoration: 'line-through', opacity: 0.7 }}>{evento.descripcion}</p>
-                                <p style={{ margin: '2px 0 0', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                                    {evento.esControl ? 'Siguiente control: ' : 'Realizado el '}
-                                    {new Date(evento.fechaRealizada).toLocaleDateString()}
-                                </p>
-                            </div>
-                            <div style={{ display: 'flex', gap: '5px' }}>
-                              <button onClick={() => handleToggleEstado(evento.id, 'REALIZADO')} style={{ padding: '6px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }} title="Reabrir">
-                                <Clock size={16} />
-                              </button>
-                              <button onClick={() => handleDelete(evento.id)} style={{ padding: '6px', background: 'none', border: 'none', color: 'var(--error-color)', cursor: 'pointer', opacity: 0.6 }}>
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
+                    <>
+                       {/* Toolbar for history table */}
+                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                            <input 
+                                type="text" 
+                                placeholder="Buscar en el historial..." 
+                                value={historySearch}
+                                onChange={(e) => setHistorySearch(e.target.value)}
+                                style={{ 
+                                    padding: '10px 15px', borderRadius: '12px', border: '1px solid var(--border-color)', 
+                                    width: '100%', fontSize: '0.85rem', background: 'white' 
+                                }}
+                            />
                         </div>
-                    ))
+                        {selectedIds.length > 0 && (
+                            <motion.button 
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                onClick={handleBulkDelete}
+                                style={{ 
+                                    background: 'var(--error-color)15', color: 'var(--error-color)',
+                                    padding: '10px 15px', borderRadius: '12px', border: '1px solid var(--error-color)30',
+                                    fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: '8px'
+                                }}
+                            >
+                                <Trash2 size={14} />
+                                Eliminar ({selectedIds.length})
+                            </motion.button>
+                        )}
+                    </div>
+
+                    <div className="organic-card" style={{ padding: '0', overflowX: 'auto', border: '1px solid var(--border-color)' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
+                            <thead>
+                                <tr style={{ background: 'var(--bg-color)', borderBottom: '1px solid var(--border-color)' }}>
+                                    <th style={{ padding: '12px 15px', width: '40px' }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedIds.length === filteredHistory.length && filteredHistory.length > 0}
+                                            onChange={() => handleSelectAll(filteredHistory.map(e => e.id))}
+                                            style={{ cursor: 'pointer' }}
+                                        />
+                                    </th>
+                                    <th style={{ padding: '12px 15px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Actividad</th>
+                                    <th style={{ padding: '12px 15px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Trimestre</th>
+                                    <th style={{ padding: '12px 15px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fecha Realizada</th>
+                                    <th style={{ padding: '12px 15px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {visibleHistory.map(evento => (
+                                    <tr key={evento.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'all 0.2s' }} className="table-row-hover">
+                                        <td style={{ padding: '12px 15px' }}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedIds.includes(evento.id)}
+                                                onChange={() => handleToggleSelection(evento.id)}
+                                                style={{ cursor: 'pointer' }}
+                                            />
+                                        </td>
+                                        <td style={{ padding: '12px 15px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{ color: 'var(--success-color)', opacity: 0.8 }}><CheckCircle size={18} /></div>
+                                                <div>
+                                                    <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)', opacity: 0.7, textDecoration: 'line-through' }}>{evento.descripcion}</p>
+                                                    {evento.esControl && <span style={{ fontSize: '0.6rem', color: 'var(--secondary-color)', fontWeight: '900' }}>SEGUIMIENTO PRENATAL</span>}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '12px 15px' }}>
+                                            {evento.trimestre && (
+                                                <span style={{ fontSize: '0.65rem', fontWeight: '900', background: 'var(--bg-color)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: '6px', border: '1px solid var(--border-color)', textTransform: 'uppercase' }}>
+                                                    {evento.trimestre.replace(' Trimestre', '')}
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td style={{ padding: '12px 15px' }}>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(evento.fechaRealizada).toLocaleDateString()}</p>
+                                        </td>
+                                        <td style={{ padding: '12px 15px', textAlign: 'right' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                                <button onClick={() => handleToggleEstado(evento.id, 'REALIZADO')} style={{ padding: '6px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }} title="Reabrir">
+                                                    <Clock size={16} />
+                                                </button>
+                                                <button onClick={() => handleDelete(evento.id)} style={{ padding: '6px', background: 'none', border: 'none', color: 'var(--error-color)', cursor: 'pointer', opacity: 0.6 }} title="Eliminar">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {hasMoreHistory && (
+                        <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                            <button 
+                                onClick={() => setHistoryVisibleLimit(prev => prev + 10)}
+                                style={{ 
+                                    background: 'var(--bg-color)', border: '1px solid var(--border-color)', 
+                                    padding: '8px 20px', borderRadius: '12px', fontSize: '0.8rem', 
+                                    fontWeight: '800', color: 'var(--primary-color)', cursor: 'pointer' 
+                                }}
+                            >
+                                Ver más historial
+                            </button>
+                        </div>
+                    )}
+                    </>
                 )}
             </motion.div>
           )}
@@ -585,6 +881,7 @@ const MedicalEvents = ({ maternaId }) => {
                       <thead>
                         <tr style={{ background: 'var(--bg-color)', borderBottom: '1px solid var(--border-color)' }}>
                           <th style={{ padding: '15px 20px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Estudio</th>
+                          <th style={{ padding: '15px 20px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Trim.</th>
                           <th style={{ padding: '15px 20px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fecha</th>
                           <th style={{ padding: '15px 20px', fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Resultado</th>
                         </tr>
@@ -596,6 +893,7 @@ const MedicalEvents = ({ maternaId }) => {
                           realizados.filter(e => e.tipo === 'LABORATORIO').map(e => (
                             <tr key={e.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                               <td style={{ padding: '15px 20px', fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)' }}>{e.descripcion}</td>
+                              <td style={{ padding: '15px 20px', fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)' }}>{e.trimestre ? e.trimestre.replace(' Trimestre', '') : '-'}</td>
                               <td style={{ padding: '15px 20px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(e.fechaRealizada).toLocaleDateString()}</td>
                               <td style={{ padding: '15px 20px' }}>
                                 <div style={{ 
@@ -748,6 +1046,21 @@ const MedicalEvents = ({ maternaId }) => {
                           onChange={e => setFormData({...formData, cantidad: parseInt(e.target.value) || 1})} 
                           style={{ width: '60px', padding: '8px', borderRadius: '10px', border: '1px solid var(--border-color)', textAlign: 'center', fontWeight: '800' }} 
                         />
+                    </div>
+                  )}
+                  {['ESTUDIO', 'LABORATORIO', 'VACUNA'].includes(formData.tipo) && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                       <label style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-muted)' }}>TRIMESTRE:</label>
+                       <select 
+                          value={formData.trimestre || ''} 
+                          onChange={e => setFormData({...formData, trimestre: e.target.value})} 
+                          style={{ padding: '8px', borderRadius: '10px', border: '1px solid var(--border-color)', fontWeight: '800', fontSize: '0.75rem' }} 
+                        >
+                            <option value="">- Seleccione -</option>
+                            <option value="1er Trimestre">1er Trimestre</option>
+                            <option value="2do Trimestre">2do Trimestre</option>
+                            <option value="3er Trimestre">3er Trimestre</option>
+                        </select>
                     </div>
                   )}
                 </div>

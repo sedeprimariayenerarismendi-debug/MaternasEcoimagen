@@ -55,6 +55,7 @@ model EventoMedico {
   prestadores     Prestador[]
   notas           String?
   cantidad        Int?     @default(1)
+  trimestre       String?
   maternaId       Int
   materna         Materna  @relation(fields: [maternaId], references: [id])
   createdAt       DateTime @default(now())
@@ -65,6 +66,7 @@ model PaqueteEventos {
   id              Int               @id @default(autoincrement())
   nombre          String
   descripcion     String?
+  trimestre       String?
   plantillas      PlantillaEvento[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -79,6 +81,7 @@ model PlantillaEvento {
   esControl        Boolean        @default(false)
   codigoCUPS       String?
   cantidad         Int            @default(1)
+  trimestre        String?
   paqueteId        Int
   paquete          PaqueteEventos @relation(fields: [paqueteId], references: [id], onDelete: Cascade)
 }

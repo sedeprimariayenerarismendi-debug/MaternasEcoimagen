@@ -170,7 +170,8 @@ const Maternas = () => {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="fade-in" style={{ position: 'relative', overflowX: 'hidden' }}>
+    <>
+    <div className="maternas-page-content" style={{ position: 'relative', overflowX: 'hidden' }}>
       {/* Decorative Blobs */}
       <div className="blob" style={{ 
         width: '500px', height: '500px', background: 'var(--primary-color)', 
@@ -357,26 +358,31 @@ const Maternas = () => {
         )}
       </div>
 
+    </div>
+
       {/* Modal Registro/Edición */}
       <AnimatePresence>
         {isModalOpen && (
-          <div style={{ 
+          <div className="modal-overlay" style={{ 
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', 
             background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000,
-            padding: '0'
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+            padding: '12px'
           }}>
             <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
               className="organic-card modal-sheet"
               style={{ 
                 width: '100%', maxWidth: '700px',
-                padding: 'clamp(1.5rem, 5vw, 3rem)',
-                boxShadow: 'var(--shadow-xl)', maxHeight: '92vh', overflowY: 'auto',
-                borderRadius: '32px 32px 0 0',
+                padding: 'clamp(1rem, 3vw, 2.5rem)',
+                boxShadow: 'var(--shadow-xl)', 
+                maxHeight: '90vh', 
+                overflowY: 'auto',
+                borderRadius: '28px',
+                position: 'relative',
+                background: 'var(--card-bg)'
               }}
             >
               {/* Handle */}
@@ -548,10 +554,11 @@ const Maternas = () => {
           .maternas-cards-view { display: block; }
           .form-grid-2 { grid-template-columns: 1fr; }
           .btn-text { display: none; }
+          .modal-overlay { align-items: flex-end !important; padding: 0 !important; }
           .modal-sheet { border-radius: 28px 28px 0 0 !important; }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

@@ -22,7 +22,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // POST /api/paquetes - Crear nuevo paquete
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { nombre, descripcion, plantillas } = req.body;
+    const { nombre, descripcion, plantillas, trimestre } = req.body;
 
     if (!nombre) {
       return res.status(400).json({ error: 'El nombre es obligatorio' });
@@ -32,6 +32,7 @@ router.post('/', authMiddleware, async (req, res) => {
       data: {
         nombre,
         descripcion,
+        trimestre,
         plantillas: {
           create: plantillas.map(p => ({
             tipo: p.tipo,
@@ -40,7 +41,8 @@ router.post('/', authMiddleware, async (req, res) => {
             esObligatorio: !!p.esObligatorio,
             esControl: !!p.esControl,
             codigoCUPS: p.codigoCUPS,
-            cantidad: parseInt(p.cantidad) || 1
+            cantidad: parseInt(p.cantidad) || 1,
+            trimestre: p.trimestre
           }))
         }
       },
@@ -58,7 +60,7 @@ router.post('/', authMiddleware, async (req, res) => {
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion, plantillas } = req.body;
+    const { nombre, descripcion, plantillas, trimestre } = req.body;
 
     if (!nombre) {
       return res.status(400).json({ error: 'El nombre es obligatorio' });
@@ -77,6 +79,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
             data: {
                 nombre,
                 descripcion,
+                trimestre,
                 plantillas: {
                     create: plantillas.map(p => ({
                         tipo: p.tipo,
@@ -85,7 +88,8 @@ router.put('/:id', authMiddleware, async (req, res) => {
                         esObligatorio: !!p.esObligatorio,
                         esControl: !!p.esControl,
                         codigoCUPS: p.codigoCUPS,
-                        cantidad: parseInt(p.cantidad) || 1
+                        cantidad: parseInt(p.cantidad) || 1,
+                        trimestre: p.trimestre
                     }))
                 }
             },
@@ -142,6 +146,7 @@ router.post('/aplicar/:paqueteId/materna/:maternaId', authMiddleware, async (req
         esControl: !!p.esControl,
         codigoCUPS: p.codigoCUPS,
         cantidad: p.cantidad || 1,
+        trimestre: p.trimestre || paquete.trimestre,
         maternaId: materna.id,
         estado: 'PENDIENTE',
         estaAgendado: false

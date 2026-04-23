@@ -141,6 +141,10 @@ input:focus {
   }
 }
 
+.table-row-hover:hover {
+  background: var(--primary-color)05 !important;
+}
+
 .blob {
   position: absolute;
   filter: blur(60px);

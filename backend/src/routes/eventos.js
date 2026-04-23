@@ -34,7 +34,8 @@ router.post('/', authMiddleware, async (req, res) => {
       codigoCUPS,
       prestadoresIds,
       esControl,
-      resultado
+      resultado,
+      trimestre
     } = req.body;
 
     if (!tipo || !descripcion || !fechaProgramada || !maternaId) {
@@ -52,6 +53,7 @@ router.post('/', authMiddleware, async (req, res) => {
         codigoCUPS,
         maternaId: parseInt(maternaId),
         notas,
+        trimestre,
         estado: 'PENDIENTE',
         estaAgendado: false,
         prestadores: (prestadoresIds && prestadoresIds.length > 0) ? {
@@ -72,7 +74,7 @@ router.post('/', authMiddleware, async (req, res) => {
 router.patch('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const { estado, fechaRealizada, notas, fechaProgramada, descripcion, codigoCUPS, prestadoresIds, esControl, resultado, estaAgendado, fechaAgendamiento } = req.body;
+    const { estado, fechaRealizada, notas, fechaProgramada, descripcion, codigoCUPS, prestadoresIds, esControl, resultado, estaAgendado, fechaAgendamiento, trimestre } = req.body;
 
     const data = {};
     if (estado) data.estado = estado;
@@ -88,6 +90,7 @@ router.patch('/:id', authMiddleware, async (req, res) => {
     if (fechaAgendamiento !== undefined) {
       data.fechaAgendamiento = fechaAgendamiento ? new Date(fechaAgendamiento) : null;
     }
+    if (trimestre !== undefined) data.trimestre = trimestre;
     if (prestadoresIds) {
       data.prestadores = {
         set: prestadoresIds.map(id => ({ id: parseInt(id) }))
@@ -122,6 +125,27 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al eliminar evento' });
+  }
+});
+
+// POST /api/eventos/bulk-delete - eliminar múltiples eventos
+router.post('/bulk-delete', authMiddleware, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ error: 'Faltan IDs para eliminar' });
+    }
+
+    await prisma.eventoMedico.deleteMany({
+      where: {
+        id: { in: ids.map(id => parseInt(id)) }
+      }
+    });
+
+    res.json({ message: 'Eventos eliminados correctamente' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al eliminar eventos en bloque' });
   }
 });
 
@@ -174,9 +198,9 @@ router.post('/materna/:id/generar-basicos', authMiddleware, async (req, res) => 
     const lab3 = new Date(startDate); lab3.setDate(lab3.getDate() + (35 * 7)); // Sem 35
 
     basicEvents.push(
-        { tipo: 'LABORATORIO', descripcion: 'Laboratorios 1er Trimestre', fechaProgramada: lab1, esObligatorio: true, maternaId: materna.id, estado: 'PENDIENTE', estaAgendado: false },
-        { tipo: 'LABORATORIO', descripcion: 'Prueba de Tolerancia a la Glucosa', fechaProgramada: lab2, esObligatorio: true, maternaId: materna.id, estado: 'PENDIENTE', estaAgendado: false },
-        { tipo: 'LABORATORIO', descripcion: 'Laboratorios 3er Trimestre', fechaProgramada: lab3, esObligatorio: true, maternaId: materna.id, estado: 'PENDIENTE', estaAgendado: false }
+        { tipo: 'LABORATORIO', descripcion: 'Laboratorios 1er Trimestre', fechaProgramada: lab1, esObligatorio: true, maternaId: materna.id, estado: 'PENDIENTE', estaAgendado: false, trimestre: '1er Trimestre' },
+        { tipo: 'LABORATORIO', descripcion: 'Prueba de Tolerancia a la Glucosa', fechaProgramada: lab2, esObligatorio: true, maternaId: materna.id, estado: 'PENDIENTE', estaAgendado: false, trimestre: '2do Trimestre' },
+        { tipo: 'LABORATORIO', descripcion: 'Laboratorios 3er Trimestre', fechaProgramada: lab3, esObligatorio: true, maternaId: materna.id, estado: 'PENDIENTE', estaAgendado: false, trimestre: '3er Trimestre' }
     );
 
     // Crear todos los eventos

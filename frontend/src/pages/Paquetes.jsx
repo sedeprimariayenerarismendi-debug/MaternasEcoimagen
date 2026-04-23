@@ -26,6 +26,7 @@ const Paquetes = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
+    trimestre: '',
     plantillas: []
   });
 
@@ -57,14 +58,17 @@ const Paquetes = () => {
           esObligatorio: p.esObligatorio,
           esControl: p.esControl || false,
           codigoCUPS: p.codigoCUPS || '',
-          cantidad: p.cantidad || 1
-        }))
+          cantidad: p.cantidad || 1,
+          trimestre: p.trimestre || ''
+        })),
+        trimestre: paquete.trimestre || ''
       });
     } else {
       setCurrentPackage(null);
       setFormData({
         nombre: '',
         descripcion: '',
+        trimestre: '',
         plantillas: []
       });
     }
@@ -76,7 +80,7 @@ const Paquetes = () => {
       ...formData,
       plantillas: [
         ...formData.plantillas,
-        { tipo: 'ESTUDIO', descripcion: '', semanasRelativas: 0, esObligatorio: false, esControl: false, cantidad: 1 }
+        { tipo: 'ESTUDIO', descripcion: '', semanasRelativas: 0, esObligatorio: false, esControl: false, cantidad: 1, trimestre: '' }
       ]
     });
   };
@@ -306,6 +310,46 @@ const Paquetes = () => {
                     </div>
                 </div>
 
+                <div style={{ background: 'var(--primary-color)05', padding: '1.5rem', borderRadius: '20px', border: '1px solid var(--primary-color)10' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--primary-color)', marginBottom: '12px', display: 'block', textTransform: 'uppercase' }}>Configuración del Seguimiento</label>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <button 
+                            type="button" 
+                            onClick={() => setFormData({...formData, trimestre: ''})}
+                            style={{ 
+                                flex: 1, padding: '12px', borderRadius: '12px', border: '2px solid', 
+                                borderColor: formData.trimestre === '' ? 'var(--primary-color)' : 'var(--border-color)',
+                                background: formData.trimestre === '' ? 'white' : 'transparent',
+                                color: formData.trimestre === '' ? 'var(--primary-color)' : 'var(--text-muted)',
+                                fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s'
+                            }}
+                        >
+                            Paquete de Consultas
+                        </button>
+                        <select 
+                            value={formData.trimestre || ''}
+                            onChange={(e) => setFormData({...formData, trimestre: e.target.value})}
+                            style={{ 
+                                flex: 1, padding: '12px', borderRadius: '12px', border: '2px solid', 
+                                borderColor: formData.trimestre !== '' ? 'var(--accent-color)' : 'var(--border-color)',
+                                background: formData.trimestre !== '' ? 'white' : 'transparent',
+                                color: formData.trimestre !== '' ? 'var(--accent-color)' : 'var(--text-muted)',
+                                fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer'
+                            }}
+                        >
+                            <option value="">- O Elegir Trimestre -</option>
+                            <option value="1er Trimestre">Para 1er Trimestre</option>
+                            <option value="2do Trimestre">Para 2do Trimestre</option>
+                            <option value="3er Trimestre">Para 3er Trimestre</option>
+                        </select>
+                    </div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '8px', paddingLeft: '4px' }}>
+                        {formData.trimestre === '' 
+                            ? "Los eventos de este paquete permitirán definir cantidades personalizadas (ej. Consultas)." 
+                            : `Todos los estudios y laboratorios se marcarán automáticamente para el ${formData.trimestre}.`}
+                    </p>
+                </div>
+
                 <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
                         <label style={{ fontSize: '0.8rem', fontWeight: '900', color: 'var(--text-main)', display: 'block' }}>EVENTOS EN EL PAQUETE</label>
@@ -373,7 +417,7 @@ const Paquetes = () => {
                                     {tmpl.tipo === 'CONSULTA' ? (
                                       <>
                                         <p style={{ fontSize: '0.65rem', fontWeight: '950', color: 'var(--text-muted)', marginBottom: '2px', whiteSpace: 'nowrap' }}>
-                                            CANTIDAD MÍNIMA
+                                            CANTIDAD
                                         </p>
                                         <input 
                                             type="number"
@@ -386,8 +430,31 @@ const Paquetes = () => {
                                         />
                                       </>
                                     ) : (
-                                      /* Espacio vacío para otros tipos */
-                                      <div style={{ height: '100%' }}></div>
+                                      <>
+                                        <p style={{ fontSize: '0.65rem', fontWeight: '950', color: 'var(--text-muted)', marginBottom: '2px', whiteSpace: 'nowrap' }}>
+                                            ETAPA / TRIM.
+                                        </p>
+                                        {formData.trimestre ? (
+                                            <div style={{ 
+                                                padding: '8px', borderRadius: '8px', background: 'var(--accent-color)10', 
+                                                fontSize: '0.75rem', fontWeight: '800', textAlign: 'center',
+                                                border: '1px solid var(--accent-color)20', color: 'var(--accent-color)'
+                                            }}>
+                                                {formData.trimestre.split(' ')[0]}
+                                            </div>
+                                        ) : (
+                                            <select 
+                                                value={tmpl.trimestre || ''}
+                                                onChange={e => handleUpdateTemplate(index, 'trimestre', e.target.value)}
+                                                style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}
+                                            >
+                                                <option value="">- Gral -</option>
+                                                <option value="1er Trimestre">1ro</option>
+                                                <option value="2do Trimestre">2do</option>
+                                                <option value="3er Trimestre">3ro</option>
+                                            </select>
+                                        )}
+                                      </>
                                     )}
                                 </div>
                                 <div style={{ textAlign: 'center' }}>
