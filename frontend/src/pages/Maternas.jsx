@@ -170,7 +170,7 @@ const Maternas = () => {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="fade-in" style={{ position: 'relative' }}>
+    <div className="fade-in" style={{ position: 'relative', overflowX: 'hidden' }}>
       {/* Decorative Blobs */}
       <div className="blob" style={{ 
         width: '500px', height: '500px', background: 'var(--primary-color)', 
@@ -319,8 +319,8 @@ const Maternas = () => {
                     <Baby size={18} />
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontWeight: '800', fontSize: '0.9rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nombre}</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{m.documento}</p>
+                    <p style={{ fontWeight: '800', fontSize: '0.85rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nombre}</p>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{m.documento}</p>
                   </div>
                 </div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '15px', fontSize: '0.65rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30`, flexShrink: 0 }}>

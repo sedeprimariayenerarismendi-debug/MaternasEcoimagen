@@ -5,7 +5,7 @@ import BottomNav from './BottomNav';
 
 const Layout = () => {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div className="layout-root">
       {/* Sidebar: visible solo en desktop */}
       <div className="sidebar-wrapper">
         <Sidebar />
@@ -25,6 +25,12 @@ const Layout = () => {
 
       <style>{`
         /* Desktop: sidebar visible, bottom nav oculto */
+        .layout-root {
+          display: flex;
+          min-height: 100vh;
+          width: 100%;
+          /* Remove overflow-x: hidden from here as it's on html/body */
+        }
         .sidebar-wrapper {
           display: block;
         }
@@ -37,6 +43,9 @@ const Layout = () => {
           padding: 2.5rem;
           background: var(--bg-color);
           min-height: 100vh;
+          width: 100%;
+          max-width: 100%;
+          overflow-x: hidden;
         }
 
         /* Móvil: sidebar oculto, bottom nav visible */
@@ -50,7 +59,9 @@ const Layout = () => {
           .main-content {
             margin-left: 0;
             padding: 0.75rem 0.75rem;
-            padding-bottom: 80px; /* Espacio para el bottom nav */
+            padding-bottom: 80px;
+            width: 100%;
+            overflow-x: hidden;
           }
         }
       `}</style>

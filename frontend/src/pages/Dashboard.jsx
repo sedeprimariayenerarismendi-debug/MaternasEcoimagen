@@ -32,12 +32,12 @@ const StatCard = ({ title, value, icon: Icon, color, delay }) => (
       justifyContent: 'center',
       flexShrink: 0
     }}>
-      <Icon size={22} />
+      <Icon size={18} />
     </div>
     <div style={{ flex: 1, minWidth: 0 }}>
-      <p className="stat-label" style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.62rem, 1.8vw, 0.85rem)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>{title}</p>
-      <h3 className="stat-value" style={{ fontSize: 'clamp(1.6rem, 5vw, 2.2rem)', fontWeight: '950', margin: '2px 0', color: 'var(--text-main)', letterSpacing: '-1px' }}>{value}</h3>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 'clamp(0.72rem, 2vw, 0.85rem)', color: 'var(--success-color)' }}>
+      <p className="stat-label" style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.55rem, 1.5vw, 0.8rem)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>{title}</p>
+      <h3 className="stat-value" style={{ fontSize: 'clamp(1.3rem, 4vw, 2rem)', fontWeight: '950', margin: '0', color: 'var(--text-main)', letterSpacing: '-0.8px' }}>{value}</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: 'clamp(0.65rem, 1.8vw, 0.8rem)', color: 'var(--success-color)', marginTop: '2px' }}>
         <div style={{ display: 'flex', alignItems: 'center', background: 'var(--success-color)15', padding: '1px 6px', borderRadius: '6px' }}>
           <ArrowUpRight size={12} />
           <span style={{ fontWeight: '800' }}>12%</span>
@@ -143,7 +143,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="fade-in" style={{ position: 'relative' }}>
+    <div className="fade-in" style={{ position: 'relative', overflowX: 'hidden' }}>
       {/* Decorative Blobs */}
       <div className="blob" style={{ 
         width: '400px', height: '400px', background: 'var(--primary-color)', 
@@ -176,7 +176,7 @@ const Dashboard = () => {
 
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', 
         gap: '15px',
         position: 'relative',
         zIndex: 1
@@ -226,18 +226,16 @@ const Dashboard = () => {
            initial={{ opacity: 0, x: 20 }}
            animate={{ opacity: 1, x: 0 }}
            transition={{ duration: 0.5, delay: 0.6 }}
-           className="organic-card"
-           style={{
-             padding: '1.2rem',
-             display: 'flex',
-             flexDirection: 'column',
-             gap: '10px',
-           }}
+           className="organic-card" 
+           style={{ marginTop: '1rem', padding: '1rem', position: 'relative', zIndex: 1 }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '900', color: 'var(--text-main)' }}>Alertas de Agendamiento</h3>
-            <span style={{ fontSize: '0.7rem', color: 'var(--error-color)', fontWeight: '900', background: 'var(--error-color)15', padding: '4px 10px', borderRadius: '10px' }}>
-                {data.totalAlarmas} PENDIENTES
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '8px' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: '950', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, color: 'var(--text-main)' }}>
+              <Activity color="var(--primary-color)" size={18} />
+              Alertas de Agendamiento
+            </h3>
+            <span style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--error-color)', background: 'var(--error-color)15', padding: '3px 8px', borderRadius: '8px', textTransform: 'uppercase' }}>
+              {data.alarmas.length} PENDIENTES
             </span>
           </div>
           
@@ -267,11 +265,9 @@ const Dashboard = () => {
                     background: getUrgenciaColor(a.urgencia),
                     boxShadow: `${getUrgenciaColor(a.urgencia)}00 0 0 4px`,
                   }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: '0.85rem', fontWeight: '900', color: 'var(--text-main)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {a.materna}
-                    </p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1px' }}>{a.descripcion}</p>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontWeight: '800', fontSize: '0.85rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.materna}</p>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{a.descripcion}</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: '0.65rem', fontWeight: '900', color: getUrgenciaColor(a.urgencia), background: `${getUrgenciaColor(a.urgencia)}15`, padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
