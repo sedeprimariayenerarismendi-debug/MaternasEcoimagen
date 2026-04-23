@@ -28,10 +28,67 @@ model Materna {
   fechaEmbarazo   DateTime
   fechaRegistro   DateTime @default(now())
   tipoRiesgo      String   // BAJA, MEDIANA, ALTA
+  alertas         String?
+  telefono        String?
+  direccion       String?
+  contactoEmergencia String?
   creadaPorId     Int
-  creadaPor       User     @relation(fields: [creadaPorId], references: [id])
+  creadaPor       User           @relation(fields: [creadaPorId], references: [id])
+  eventos         EventoMedico[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model EventoMedico {
+  id              Int      @id @default(autoincrement())
+  tipo            String   // CITA, ESTUDIO, CONTROL
+  descripcion     String
+  fechaProgramada DateTime
+  fechaRealizada  DateTime?
+  estado          String   @default("PENDIENTE") // PENDIENTE, REALIZADO, CANCELADO
+  esObligatorio   Boolean  @default(false)
+  esControl       Boolean  @default(false)
+  estaAgendado    Boolean  @default(false)
+  resultado       String?
+  codigoCUPS      String?
+  prestadores     Prestador[]
+  notas           String?
+  cantidad        Int?     @default(1)
+  maternaId       Int
+  materna         Materna  @relation(fields: [maternaId], references: [id])
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model PaqueteEventos {
+  id              Int               @id @default(autoincrement())
+  nombre          String
+  descripcion     String?
+  plantillas      PlantillaEvento[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model PlantillaEvento {
+  id               Int            @id @default(autoincrement())
+  tipo             String         // CITA, ESTUDIO, CONTROL
+  descripcion      String
+  semanasRelativas Int            @default(0) // Semanas desde fechaEmbarazo
+  esObligatorio    Boolean        @default(false)
+  esControl        Boolean        @default(false)
+  codigoCUPS       String?
+  cantidad         Int            @default(1)
+  paqueteId        Int
+  paquete          PaqueteEventos @relation(fields: [paqueteId], references: [id], onDelete: Cascade)
+}
+
+model Prestador {
+  id              Int            @id @default(autoincrement())
+  nombre          String         @unique
+  nit             String?
+  eventos         EventoMedico[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model ThemeConfig {

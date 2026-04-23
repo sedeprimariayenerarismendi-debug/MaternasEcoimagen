@@ -8,7 +8,8 @@ import {
   Settings, 
   LogOut, 
   Baby,
-  ChevronRight
+  ChevronRight,
+  Layers
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -20,6 +21,7 @@ const Sidebar = () => {
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, admin: false },
     { name: 'Maternas', path: '/maternas', icon: Baby, admin: false },
+    { name: 'Paquetes', path: '/paquetes', icon: Layers, admin: false },
     { name: 'Usuarios', path: '/usuarios', icon: Users, admin: true },
     { name: 'Configuración', path: '/configuracion', icon: Settings, admin: true },
   ];

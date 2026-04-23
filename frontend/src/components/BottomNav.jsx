@@ -8,6 +8,7 @@ import {
   Users,
   Settings,
   LogOut,
+  Layers
 } from 'lucide-react';
 
 const BottomNav = () => {
@@ -17,6 +18,7 @@ const BottomNav = () => {
   const menuItems = [
     { name: 'Inicio', path: '/dashboard', icon: LayoutDashboard, admin: false },
     { name: 'Maternas', path: '/maternas', icon: Baby, admin: false },
+    { name: 'Paquetes', path: '/paquetes', icon: Layers, admin: false },
     { name: 'Usuarios', path: '/usuarios', icon: Users, admin: true },
     { name: 'Config', path: '/configuracion', icon: Settings, admin: true },
   ];

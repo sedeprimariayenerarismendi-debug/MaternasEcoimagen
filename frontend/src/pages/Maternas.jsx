@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useNotification } from '../context/NotificationContext';
 
 const Maternas = () => {
   const [maternas, setMaternas] = useState([]);
@@ -22,7 +23,9 @@ const Maternas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentMaterna, setCurrentMaterna] = useState(null);
+  const [paquetes, setPaquetes] = useState([]);
   const navigate = useNavigate();
+  const { notify, confirm } = useNotification();
   
   const [formData, setFormData] = useState({
     nombre: '',
@@ -30,7 +33,12 @@ const Maternas = () => {
     tipoDocumento: 'CC',
     fechaNacimiento: '',
     fechaEmbarazo: '',
-    tipoRiesgo: 'BAJA'
+    tipoRiesgo: 'BAJA',
+    paquetesSeleccionados: [],
+    alertas: '',
+    telefono: '',
+    direccion: '',
+    contactoEmergencia: ''
   });
 
   const fetchMaternas = async () => {
@@ -46,6 +54,13 @@ const Maternas = () => {
 
   useEffect(() => {
     fetchMaternas();
+    const fetchPaquetes = async () => {
+        try {
+            const res = await api.get('/paquetes');
+            setPaquetes(res.data);
+        } catch (err) { console.error(err); }
+    };
+    fetchPaquetes();
   }, []);
 
   const handleOpenModal = (e, materna = null) => {
@@ -58,7 +73,12 @@ const Maternas = () => {
         tipoDocumento: materna.tipoDocumento,
         fechaNacimiento: materna.fechaNacimiento.split('T')[0],
         fechaEmbarazo: materna.fechaEmbarazo.split('T')[0],
-        tipoRiesgo: materna.tipoRiesgo
+        tipoRiesgo: materna.tipoRiesgo,
+        paquetesSeleccionados: [],
+        alertas: materna.alertas || '',
+        telefono: materna.telefono || '',
+        direccion: materna.direccion || '',
+        contactoEmergencia: materna.contactoEmergencia || ''
       });
     } else {
       setCurrentMaterna(null);
@@ -68,7 +88,12 @@ const Maternas = () => {
         tipoDocumento: 'CC',
         fechaNacimiento: '',
         fechaEmbarazo: '',
-        tipoRiesgo: 'BAJA'
+        tipoRiesgo: 'BAJA',
+        paquetesSeleccionados: [],
+        alertas: '',
+        telefono: '',
+        direccion: '',
+        contactoEmergencia: ''
       });
     }
     setIsModalOpen(true);
@@ -81,26 +106,49 @@ const Maternas = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      let maternaId = currentMaterna?.id;
       if (currentMaterna) {
         await api.put(`/maternas/${currentMaterna.id}`, formData);
       } else {
-        await api.post('/maternas', formData);
+        const res = await api.post('/maternas', formData);
+        maternaId = res.data.id;
       }
+
+      // Aplicar paquetes seleccionados
+      if (formData.paquetesSeleccionados && formData.paquetesSeleccionados.length > 0) {
+          await Promise.all(formData.paquetesSeleccionados.map(async (pid) => {
+              if (pid === 'basico') {
+                  await api.post(`/eventos/materna/${maternaId}/generar-basicos`);
+              } else {
+                  await api.post(`/paquetes/aplicar/${pid}/materna/${maternaId}`);
+              }
+          }));
+      }
+
       setIsModalOpen(false);
+      notify(currentMaterna ? 'Paciente actualizada correctamente' : 'Paciente registrada con éxito');
       fetchMaternas();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error al guardar registro');
+      notify(err.response?.data?.error || 'Error al guardar registro', 'error');
     }
   };
 
   const handleDelete = async (e, id) => {
     e.stopPropagation();
-    if (window.confirm('¿Estás seguro de eliminar este registro?')) {
+    const ok = await confirm({
+        title: '¿Eliminar Registro?',
+        message: 'Esta acción no se puede deshacer y eliminará todo el historial de la paciente.',
+        confirmText: 'Eliminar Paciente',
+        type: 'danger'
+    });
+
+    if (ok) {
       try {
         await api.delete(`/maternas/${id}`);
+        notify('Registro eliminado con éxito');
         fetchMaternas();
       } catch (err) {
-        alert('Error al eliminar registro');
+        notify('Error al eliminar registro', 'error');
       }
     }
   };
@@ -376,6 +424,71 @@ const Maternas = () => {
                   </div>
                 </div>
 
+                <div className="form-grid-2">
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>TELÉFONO</label>
+                    <input type="text" value={formData.telefono} onChange={e => setFormData({...formData, telefono: e.target.value})} placeholder="Ej. 321 456 7890" style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>CONTACTO EMERGENCIA / PAREJA</label>
+                    <input type="text" value={formData.contactoEmergencia} onChange={e => setFormData({...formData, contactoEmergencia: e.target.value})} placeholder="Ej. Juan Perez (Pareja)" style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%' }} />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>DIRECCIÓN DE RESIDENCIA</label>
+                  <input type="text" value={formData.direccion} onChange={e => setFormData({...formData, direccion: e.target.value})} placeholder="Ej. Calle 10 #5-20, Cúcuta" style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%' }} />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>APLICAR PAQUETES DE ESTUDIOS (OPCIONAL)</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    <motion.button 
+                      type="button"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        const current = formData.paquetesSeleccionados;
+                        const next = current.includes('basico') ? current.filter(x => x !== 'basico') : [...current, 'basico'];
+                        setFormData({...formData, paquetesSeleccionados: next});
+                      }}
+                      style={{ 
+                        padding: '10px 16px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '700',
+                        border: '1px solid',
+                        borderColor: formData.paquetesSeleccionados.includes('basico') ? 'var(--primary-color)' : 'var(--border-color)',
+                        background: formData.paquetesSeleccionados.includes('basico') ? 'var(--primary-color)20' : 'var(--bg-color)',
+                        color: formData.paquetesSeleccionados.includes('basico') ? 'var(--primary-color)' : 'var(--text-muted)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Plan Básico
+                    </motion.button>
+                    {paquetes.map(p => (
+                      <motion.button 
+                        key={p.id}
+                        type="button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          const current = formData.paquetesSeleccionados;
+                          const next = current.includes(p.id) ? current.filter(x => x !== p.id) : [...current, p.id];
+                          setFormData({...formData, paquetesSeleccionados: next});
+                        }}
+                        style={{ 
+                          padding: '10px 16px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '700',
+                          border: '1px solid',
+                          borderColor: formData.paquetesSeleccionados.includes(p.id) ? 'var(--primary-color)' : 'var(--border-color)',
+                          background: formData.paquetesSeleccionados.includes(p.id) ? 'var(--primary-color)20' : 'var(--bg-color)',
+                          color: formData.paquetesSeleccionados.includes(p.id) ? 'var(--primary-color)' : 'var(--text-muted)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {p.nombre}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
                 <div>
                   <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '14px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>NIVEL DE RIESGO CLÍNICO</label>
                   <div style={{ display: 'flex', gap: '12px' }}>
@@ -387,6 +500,16 @@ const Maternas = () => {
                       </motion.button>
                     ))}
                   </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>ALERTAS CLÍNICAS (ALERGIAS, RIESGOS ESPECÍFICOS)</label>
+                  <textarea 
+                    value={formData.alertas} 
+                    onChange={e => setFormData({...formData, alertas: e.target.value})} 
+                    placeholder="Ej. Alergia a la penicilina, antecedente de preeclampsia..." 
+                    style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%', minHeight: '80px', resize: 'none' }} 
+                  />
                 </div>
                 
                 <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}

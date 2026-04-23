@@ -11,6 +11,7 @@ import {
   User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNotification } from '../context/NotificationContext';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -18,6 +19,7 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const { notify } = useNotification();
   
   const [formData, setFormData] = useState({
     nombre: '',
@@ -61,8 +63,9 @@ const Users = () => {
       }
       setIsModalOpen(false);
       fetchUsers();
+      notify(currentUser ? 'Usuario actualizado' : 'Usuario creado con éxito');
     } catch (err) {
-      alert(err.response?.data?.error || 'Error al guardar usuario');
+      notify(err.response?.data?.error || 'Error al guardar usuario', 'error');
     }
   };
 
@@ -70,8 +73,9 @@ const Users = () => {
     try {
       await api.put(`/users/${user.id}`, { activo: !user.activo });
       fetchUsers();
+      notify('Estado del usuario actualizado');
     } catch (err) {
-      alert('Error al cambiar estado');
+      notify('Error al cambiar estado', 'error');
     }
   };
 

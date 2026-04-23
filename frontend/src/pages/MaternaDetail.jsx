@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
+import MedicalEvents from '../components/MedicalEvents';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -141,9 +142,9 @@ const MaternaDetail = () => {
         Volver
       </motion.button>
 
-      <div className="detail-grid" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Column 1: Profile & Progress */}
-        <div style={{ display: 'grid', gap: '2rem' }}>
+      <div className="detail-grid-container" style={{ position: 'relative', zIndex: 1 }}>
+        {/* Column 1: Profile Header & Alerts */}
+        <div style={{ display: 'grid', gap: '1rem' }}>
           {/* Header Card */}
           <motion.div variants={itemVariants} className="organic-card" style={{ 
             padding: '1.2rem', 
@@ -182,154 +183,112 @@ const MaternaDetail = () => {
               </p>
             </div>
           </motion.div>
-
-          {/* Pregnancy Tracker */}
-          <motion.div variants={itemVariants} className="organic-card" style={{ 
-            padding: '1.5rem', 
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
-               <div>
-                  <h2 style={{ fontSize: '1.1rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
-                    <Heart color="var(--primary-color)" fill="var(--primary-color)" size={18} />
-                    Gestación
-                  </h2>
-               </div>
-              <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '1.8rem', fontWeight: '950', color: 'var(--primary-color)', letterSpacing: '-1px' }}>{info.progress}%</span>
+          
+          {materna.alertas && (
+            <motion.div variants={itemVariants} className="organic-card" style={{ 
+              padding: '1.2rem', 
+              background: 'var(--error-color)10', 
+              border: '2px solid var(--error-color)30',
+              display: 'flex',
+              gap: '12px',
+              alignItems: 'flex-start'
+            }}>
+              <AlertTriangle size={24} color="var(--error-color)" style={{ flexShrink: 0, marginTop: '4px' }} />
+              <div>
+                <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '950', color: 'var(--error-color)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Alerta Clínica</h4>
+                <p style={{ margin: '4px 0 0', fontSize: '1rem', fontWeight: '800', color: 'var(--text-main)' }}>{materna.alertas}</p>
               </div>
-            </div>
-
-            <div style={{ width: '100%', height: '18px', background: 'var(--bg-color)', borderRadius: '10px', overflow: 'hidden', marginBottom: '1.5rem', padding: '3px', border: '1px solid var(--border-color)' }}>
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${info.progress}%` }}
-                transition={{ duration: 1.5, ease: "circOut" }}
-                style={{ 
-                  height: '100%', 
-                  background: `linear-gradient(90deg, var(--primary-color), var(--accent-color))`, 
-                  borderRadius: '6px',
-                  boxShadow: 'var(--primary-glow) 0 2px 8px'
-                }}
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8rem' }}>
-              {[
-                { label: 'EDD', val: info.edd.toLocaleDateString(), icon: <Calendar size={16} />, color: 'var(--secondary-color)' },
-                { label: 'SEMANAS', val: `${info.weeks}s, ${info.days}d`, icon: <Clock size={16} />, color: 'var(--primary-color)' }
-              ].map((stat, i) => (
-                <div key={i} style={{ padding: '0.8rem', borderRadius: '16px', background: 'var(--bg-color)', textAlign: 'center', border: '1px solid var(--border-color)' }}>
-                  <div style={{ width: '30px', height: '30px', borderRadius: '10px', background: 'var(--card-bg)', margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, border: '1px solid var(--border-color)' }}>
-                    {stat.icon}
-                  </div>
-                  <p style={{ fontSize: '0.6rem', fontWeight: '900', color: 'var(--text-muted)', letterSpacing: '0.5px' }}>{stat.label}</p>
-                  <p style={{ fontSize: '0.9rem', fontWeight: '900', color: 'var(--text-main)' }}>{stat.val}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </div>
+      </div>
 
-        {/* Column 2: Medical & Contact */}
-        <div style={{ display: 'grid', gap: '2rem' }}>
-             <motion.div variants={itemVariants} className="organic-card" style={{ padding: '1.2rem' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '950', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
-                  <div style={{ padding: '6px', background: 'var(--secondary-color)15', borderRadius: '10px' }}>
-                    <Stethoscope size={18} color="var(--secondary-color)" />
-                  </div>
-                  Data Médica
-                </h3>
-                <div style={{ display: 'grid', gap: '0.8rem' }}>
-                   {[
-                     { label: 'Sangre', val: 'O+' },
-                     { label: 'Alergias', val: 'Ninguna' },
-                     { label: 'Control', val: 'Hace 5d', color: 'var(--success-color)' }
-                   ].map((item, i) => (
-                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '6px', borderBottom: i < 2 ? '1px solid var(--border-color)' : 'none' }}>
-                        <span style={{ color: 'var(--text-muted)', fontWeight: '700', fontSize: '0.85rem' }}>{item.label}</span>
-                        <span style={{ fontWeight: '900', color: item.color || 'var(--text-main)', fontSize: '0.85rem' }}>{item.val}</span>
-                     </div>
-                   ))}
-                </div>
-             </motion.div>
+      {/* Main Clinical Section (TOP) */}
+      <motion.div variants={itemVariants} className="organic-card" style={{ marginTop: '1.5rem', padding: '1.2rem' }}>
+        <MedicalEvents maternaId={id} />
+      </motion.div>
 
-             <motion.div variants={itemVariants} className="organic-card" style={{ padding: '1.2rem' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '950', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
-                  <div style={{ padding: '6px', background: 'var(--primary-color)15', borderRadius: '10px' }}>
-                    <MapPin size={18} color="var(--primary-color)" />
-                  </div>
-                  Contacto
-                </h3>
-                <div style={{ display: 'grid', gap: '0.6rem' }}>
-                   {[
-                     { icon: <Phone size={14} />, text: '+57 321 456 7890' },
-                     { icon: <User size={14} />, text: 'Pareja: Juan Perez' },
-                     { icon: <MapPin size={14} />, text: 'Cúcuta, Calle 10 #5-20' }
-                   ].map((item, i) => (
-                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ padding: '8px', background: 'var(--bg-color)', borderRadius: '10px', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>
-                          {item.icon}
-                        </div>
-                        <span style={{ fontWeight: '800', color: 'var(--text-main)', fontSize: '0.85rem' }}>{item.text}</span>
-                     </div>
-                   ))}
-                </div>
-             </motion.div>
-        </div>
-
-        {/* Column 3: Actions & System */}
-        <div style={{ display: 'grid', gap: '2rem' }}>
-          <motion.div variants={itemVariants} className="organic-card" style={{ 
-            background: 'linear-gradient(135deg, var(--secondary-color) 0%, #1d4ed8 100%)', 
-            padding: '2rem', 
-            color: 'white', 
-            boxShadow: 'var(--secondary-color)40 0 20px' 
-          }}>
-            <h3 style={{ fontWeight: '950', fontSize: '1.5rem', marginBottom: '1.5rem', letterSpacing: '-0.5px' }}>Acciones</h3>
-            <div style={{ display: 'grid', gap: '12px' }}>
-              <motion.button 
-                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.3)' }}
-                whileTap={{ scale: 0.95 }}
-                style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', fontWeight: '900', borderRadius: '18px', cursor: 'pointer', fontSize: '1rem' }}
-              >
-                Nuevo Control
-              </motion.button>
-              <motion.button 
-                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.15)' }}
-                whileTap={{ scale: 0.95 }}
-                style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', fontWeight: '900', borderRadius: '18px', cursor: 'pointer', fontSize: '1rem' }}
-              >
-                Cita
-              </motion.button>
+      {/* Info Grid (BOTTOM) */}
+      <div className="detail-grid" style={{ position: 'relative', zIndex: 1, marginTop: '2rem' }}>
+        {/* Column 1: Pregnancy Tracker */}
+        <motion.div variants={itemVariants} className="organic-card" style={{ 
+          padding: '1.5rem', 
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
+             <div>
+                <h2 style={{ fontSize: '1.1rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
+                  <Heart color="var(--primary-color)" fill="var(--primary-color)" size={18} />
+                  Gestación
+                </h2>
+             </div>
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ fontSize: '1.8rem', fontWeight: '950', color: 'var(--primary-color)', letterSpacing: '-1px' }}>{info.progress}%</span>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div variants={itemVariants} className="organic-card" style={{ padding: '2rem' }}>
-            <h3 style={{ fontSize: '0.9rem', fontWeight: '950', marginBottom: '1.5rem', color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Registro</h3>
-            <div style={{ display: 'grid', gap: '1.5rem' }}>
-               {[
-                 { label: 'REGISTRO', val: new Date(materna.fechaRegistro || Date.now()).toLocaleDateString() },
-                 { label: 'AUTORIZADO POR', val: materna.creadaPor?.nombre || 'Administrador' }
-               ].map((item, i) => (
-                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ width: '4px', height: '30px', background: 'var(--primary-color)', borderRadius: '2px' }} />
-                    <div>
-                        <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: '900', letterSpacing: '0.5px' }}>{item.label}</p>
-                        <p style={{ fontWeight: '800', fontSize: '1rem', color: 'var(--text-main)' }}>{item.val}</p>
-                    </div>
-                 </div>
-               ))}
+          <div style={{ width: '100%', height: '18px', background: 'var(--bg-color)', borderRadius: '10px', overflow: 'hidden', marginBottom: '1.5rem', padding: '3px', border: '1px solid var(--border-color)' }}>
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${info.progress}%` }}
+              transition={{ duration: 1.5, ease: "circOut" }}
+              style={{ 
+                height: '100%', 
+                background: `linear-gradient(90deg, var(--primary-color), var(--accent-color))`, 
+                borderRadius: '6px',
+                boxShadow: 'var(--primary-glow) 0 2px 8px'
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8rem' }}>
+            {[
+              { label: 'EDD', val: info.edd.toLocaleDateString(), icon: <Calendar size={16} />, color: 'var(--secondary-color)' },
+              { label: 'SEMANAS', val: `${info.weeks}s, ${info.days}d`, icon: <Clock size={16} />, color: 'var(--primary-color)' }
+            ].map((stat, i) => (
+              <div key={i} style={{ padding: '0.8rem', borderRadius: '16px', background: 'var(--bg-color)', textAlign: 'center', border: '1px solid var(--border-color)' }}>
+                <div style={{ width: '30px', height: '30px', borderRadius: '10px', background: 'var(--card-bg)', margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, border: '1px solid var(--border-color)' }}>
+                  {stat.icon}
+                </div>
+                <p style={{ fontSize: '0.6rem', fontWeight: '900', color: 'var(--text-muted)', letterSpacing: '0.5px' }}>{stat.label}</p>
+                <p style={{ fontSize: '0.9rem', fontWeight: '900', color: 'var(--text-main)' }}>{stat.val}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Column 2: Contact Info */}
+        <motion.div variants={itemVariants} className="organic-card" style={{ padding: '1.2rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: '950', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
+            <div style={{ padding: '6px', background: 'var(--primary-color)15', borderRadius: '10px' }}>
+              <MapPin size={18} color="var(--primary-color)" />
             </div>
-          </motion.div>
-        </div>
+            Contacto
+          </h3>
+          <div style={{ display: 'grid', gap: '0.8rem' }}>
+            {[
+              { icon: <Phone size={16} />, label: 'Teléfono', val: materna.telefono || 'No registrado' },
+              { icon: <MapPin size={16} />, label: 'Dirección', val: materna.direccion || 'No registrada' },
+              { icon: <User size={16} />, label: 'Contacto/Pareja', val: materna.contactoEmergencia || 'No registrado' }
+            ].map((item, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ color: 'var(--primary-color)' }}>{item.icon}</div>
+                <div>
+                  <p style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>{item.label}</p>
+                  <p style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)' }}>{item.val}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
       <style>{`
         .detail-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 1rem;
+          gap: 1.5rem;
           align-items: start;
+          margin-bottom: 2rem;
         }
 
         @media (min-width: 1024px) {

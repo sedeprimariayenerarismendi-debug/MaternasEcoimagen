@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
 import { Palette, Building2, Save, RefreshCcw, Moon, Sun, Loader2 } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
 
 const ThemeConfig = () => {
   const { config, updateTheme } = useTheme();
   const [formData, setFormData] = useState({ ...config });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const { notify } = useNotification();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -20,16 +21,14 @@ const ThemeConfig = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
     
     const result = await updateTheme(formData);
     if (result.success) {
-      setMessage('Configuración guardada exitosamente ✨');
+      notify('Configuración guardada exitosamente ✨');
     } else {
-      setMessage('Error al guardar configuración ❌');
+      notify('Error al guardar configuración ❌', 'error');
     }
     setLoading(false);
-    setTimeout(() => setMessage(''), 3000);
   };
 
   return (
@@ -154,15 +153,6 @@ const ThemeConfig = () => {
               Guardar Cambios
             </button>
 
-            {message && (
-              <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                style={{ textAlign: 'center', fontSize: '0.9rem', fontWeight: '600', color: message.includes('Error') ? '#ef4444' : '#10b981' }}
-              >
-                {message}
-              </motion.p>
-            )}
           </form>
         </motion.div>
 

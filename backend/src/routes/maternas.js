@@ -32,7 +32,11 @@ router.post('/', authMiddleware, async (req, res) => {
       tipoDocumento, 
       fechaNacimiento, 
       fechaEmbarazo, 
-      tipoRiesgo 
+      tipoRiesgo,
+      alertas,
+      telefono,
+      direccion,
+      contactoEmergencia
     } = req.body;
 
     if (!nombre || !documento || !tipoDocumento || !fechaNacimiento || !fechaEmbarazo || !tipoRiesgo) {
@@ -52,6 +56,10 @@ router.post('/', authMiddleware, async (req, res) => {
         fechaNacimiento: new Date(fechaNacimiento),
         fechaEmbarazo: new Date(fechaEmbarazo),
         tipoRiesgo,
+        alertas,
+        telefono,
+        direccion,
+        contactoEmergencia,
         creadaPorId: req.user.id
       },
       include: {
@@ -78,7 +86,11 @@ router.put('/:id', authMiddleware, async (req, res) => {
       tipoDocumento, 
       fechaNacimiento, 
       fechaEmbarazo, 
-      tipoRiesgo 
+      tipoRiesgo,
+      alertas,
+      telefono,
+      direccion,
+      contactoEmergencia
     } = req.body;
 
     const updateData = {};
@@ -88,6 +100,10 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (fechaNacimiento) updateData.fechaNacimiento = new Date(fechaNacimiento);
     if (fechaEmbarazo) updateData.fechaEmbarazo = new Date(fechaEmbarazo);
     if (tipoRiesgo) updateData.tipoRiesgo = tipoRiesgo;
+    if (alertas !== undefined) updateData.alertas = alertas;
+    if (telefono !== undefined) updateData.telefono = telefono;
+    if (direccion !== undefined) updateData.direccion = direccion;
+    if (contactoEmergencia !== undefined) updateData.contactoEmergencia = contactoEmergencia;
 
     const materna = await prisma.materna.update({
       where: { id: parseInt(id) },

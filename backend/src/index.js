@@ -8,6 +8,9 @@ const authRoutes = require("./routes/auth");
 const usersRoutes = require("./routes/users");
 const themeRoutes = require("./routes/theme");
 const maternasRoutes = require("./routes/maternas");
+const eventosRoutes = require("./routes/eventos");
+const paquetesRoutes = require("./routes/paquetes");
+const prestadoresRoutes = require("./routes/prestadores");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,6 +30,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/theme", themeRoutes);
 app.use("/api/maternas", maternasRoutes);
+app.use("/api/eventos", eventosRoutes);
+app.use("/api/paquetes", paquetesRoutes);
+app.use("/api/prestadores", prestadoresRoutes);
 
 // Serve Static Files (Frontend)
 const frontendPath = path.join(__dirname, "../../frontend/dist");
