@@ -72,7 +72,7 @@ router.post('/', authMiddleware, async (req, res) => {
 router.patch('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const { estado, fechaRealizada, notas, fechaProgramada, descripcion, codigoCUPS, prestadoresIds, esControl, resultado, estaAgendado } = req.body;
+    const { estado, fechaRealizada, notas, fechaProgramada, descripcion, codigoCUPS, prestadoresIds, esControl, resultado, estaAgendado, fechaAgendamiento } = req.body;
 
     const data = {};
     if (estado) data.estado = estado;
@@ -84,6 +84,10 @@ router.patch('/:id', authMiddleware, async (req, res) => {
     if (esControl !== undefined) data.esControl = !!esControl;
     if (resultado !== undefined) data.resultado = resultado;
     if (estaAgendado !== undefined) data.estaAgendado = !!estaAgendado;
+    // fechaAgendamiento puede ser null (para limpiarla) o una fecha válida
+    if (fechaAgendamiento !== undefined) {
+      data.fechaAgendamiento = fechaAgendamiento ? new Date(fechaAgendamiento) : null;
+    }
     if (prestadoresIds) {
       data.prestadores = {
         set: prestadoresIds.map(id => ({ id: parseInt(id) }))

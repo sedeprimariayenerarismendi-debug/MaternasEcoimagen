@@ -4,6 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
 import { Users, UserPlus, Calendar, Activity, ArrowUpRight } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
+import api from '../api';
 
 const StatCard = ({ title, value, icon: Icon, color, delay }) => (
   <motion.div
@@ -76,30 +77,29 @@ const Dashboard = () => {
               citasHoy++;
             }
 
-            // Lógica de Alarmas de Agendamiento
+            // Lógica de Alarmas de Agendamiento — TODOS los pendientes sin agendar
             if (e.estado === 'PENDIENTE' && !e.estaAgendado) {
               const diffTime = fechaE - hoy;
               const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-              let urgencia = null;
-              let msg = '';
+              let urgencia = 'PENDIENTE';
+              let msg = `En ${diffDays} días`;
 
-              if (diffDays === 1) { urgencia = 'URGENTE'; msg = 'Agendar para mañana'; }
-              else if (diffDays <= 5 && diffDays > 0) { urgencia = 'MEDIA'; msg = `Agendar en ${diffDays} días`; }
-              else if (diffDays <= 15 && diffDays > 0) { urgencia = 'BAJA'; msg = `Agendar en ${diffDays} días`; }
-              else if (diffDays <= 0) { urgencia = 'VENCIDA'; msg = 'Agendamiento vencido'; }
+              if (diffDays <= 0)              { urgencia = 'VENCIDA';   msg = 'Agendamiento vencido'; }
+              else if (diffDays === 1)         { urgencia = 'URGENTE';   msg = 'Agendar para mañana'; }
+              else if (diffDays <= 5)          { urgencia = 'MEDIA';     msg = `Agendar en ${diffDays} días`; }
+              else if (diffDays <= 15)         { urgencia = 'BAJA';      msg = `Agendar en ${diffDays} días`; }
+              // diffDays > 15 → urgencia = 'PENDIENTE', msg ya asignado arriba
 
-              if (urgencia) {
-                alarmas.push({
-                  id: e.id,
-                  materna: m.nombre,
-                  maternaId: m.id,
-                  descripcion: e.descripcion,
-                  urgencia,
-                  msg,
-                  diffDays
-                });
-              }
+              alarmas.push({
+                id: e.id,
+                materna: m.nombre,
+                maternaId: m.id,
+                descripcion: e.descripcion,
+                urgencia,
+                msg,
+                diffDays
+              });
             }
           });
         }
@@ -137,6 +137,7 @@ const Dashboard = () => {
       case 'VENCIDA': return 'var(--error-color)';
       case 'MEDIA': return 'var(--warning-color)';
       case 'BAJA': return 'var(--secondary-color)';
+      case 'PENDIENTE': return 'var(--text-muted)';
       default: return 'var(--text-muted)';
     }
   };

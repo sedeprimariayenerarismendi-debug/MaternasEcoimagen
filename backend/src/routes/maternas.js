@@ -12,6 +12,18 @@ router.get('/', authMiddleware, async (req, res) => {
       include: {
         creadaPor: {
           select: { nombre: true }
+        },
+        eventos: {
+          where: { estado: 'PENDIENTE' },
+          select: {
+            id: true,
+            tipo: true,
+            descripcion: true,
+            fechaProgramada: true,
+            estado: true,
+            estaAgendado: true,
+            fechaAgendamiento: true,
+          }
         }
       },
       orderBy: { createdAt: 'desc' },

@@ -48,8 +48,9 @@ model EventoMedico {
   estado          String   @default("PENDIENTE") // PENDIENTE, REALIZADO, CANCELADO
   esObligatorio   Boolean  @default(false)
   esControl       Boolean  @default(false)
-  estaAgendado    Boolean  @default(false)
-  resultado       String?
+  estaAgendado      Boolean   @default(false)
+  fechaAgendamiento DateTime?
+  resultado         String?
   codigoCUPS      String?
   prestadores     Prestador[]
   notas           String?

@@ -16,7 +16,8 @@ import {
   Package,
   User,
   Syringe,
-  ChevronDown
+  ChevronDown,
+  Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotification } from '../context/NotificationContext';
@@ -148,12 +149,26 @@ const MedicalEvents = ({ maternaId }) => {
   };
 
   const handleToggleAgendado = async (evento) => {
+    const nowAgendado = !evento.estaAgendado;
     try {
-      await api.patch(`/eventos/${evento.id}`, { estaAgendado: !evento.estaAgendado });
+      await api.patch(`/eventos/${evento.id}`, {
+        estaAgendado: nowAgendado,
+        // Al desagendar, limpiar la fecha de agendamiento
+        fechaAgendamiento: nowAgendado ? (evento.fechaAgendamiento || null) : null,
+      });
       fetchEventos();
-      notify(evento.estaAgendado ? 'Cita marcada como por agendar' : 'Cita marcada como agendada');
+      notify(nowAgendado ? 'Cita marcada como agendada' : 'Cita marcada como por agendar');
     } catch (err) {
       notify('Error al actualizar agendamiento', 'error');
+    }
+  };
+
+  const handleFechaAgendamiento = async (evento, fecha) => {
+    try {
+      await api.patch(`/eventos/${evento.id}`, { fechaAgendamiento: fecha || null });
+      fetchEventos();
+    } catch (err) {
+      notify('Error al guardar fecha de agendamiento', 'error');
     }
   };
 
@@ -472,6 +487,30 @@ const MedicalEvents = ({ maternaId }) => {
                                 <Bell size={10} />
                                 {evento.estaAgendado ? 'AGENDADO' : 'AGENDAR'}
                             </motion.button>
+                            {evento.estaAgendado && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Calendar size={10} style={{ color: 'var(--success-color)', flexShrink: 0 }} />
+                                    <input
+                                        type="date"
+                                        defaultValue={evento.fechaAgendamiento ? new Date(evento.fechaAgendamiento).toISOString().split('T')[0] : ''}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onChange={(e) => handleFechaAgendamiento(evento, e.target.value)}
+                                        title="Fecha en que se agendó la cita"
+                                        style={{
+                                            fontSize: '0.6rem',
+                                            fontWeight: '800',
+                                            border: '1px solid var(--success-color)50',
+                                            borderRadius: '6px',
+                                            padding: '2px 6px',
+                                            background: 'var(--success-color)10',
+                                            color: 'var(--success-color)',
+                                            cursor: 'pointer',
+                                            outline: 'none',
+                                            width: '108px',
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
