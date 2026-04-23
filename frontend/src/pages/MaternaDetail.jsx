@@ -10,30 +10,20 @@ import {
   MapPin, 
   Phone, 
   Heart,
-  Stethoscope,
   Clock
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MedicalEvents from '../components/MedicalEvents';
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" }
-  }
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
 };
 
 const MaternaDetail = () => {
@@ -60,17 +50,13 @@ const MaternaDetail = () => {
   const calculatePregnancyInfo = (pregnancyDate) => {
     const start = new Date(pregnancyDate);
     const now = new Date();
-    const diffTime = Math.abs(now - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+    const diffDays = Math.ceil(Math.abs(now - start) / (1000 * 60 * 60 * 24));
     const totalDays = 280;
     const progress = Math.min(Math.round((diffDays / totalDays) * 100), 100);
     const weeks = Math.floor(diffDays / 7);
     const days = diffDays % 7;
-    
     const edd = new Date(start);
     edd.setDate(edd.getDate() + 280);
-    
     return { progress, weeks, days, edd };
   };
 
@@ -88,216 +74,197 @@ const MaternaDetail = () => {
     <div style={{ padding: '4rem', textAlign: 'center' }}>
       <AlertTriangle size={48} style={{ color: 'var(--error-color)', marginBottom: '1rem' }} />
       <h3 style={{ color: 'var(--text-main)' }}>Paciente no encontrada</h3>
-      <button onClick={() => navigate('/maternas')} style={{ marginTop: '1rem', background: 'var(--primary-color)', color: 'white', padding: '10px 20px', borderRadius: '12px', border: 'none', fontWeight: 'bold' }}>
+      <button onClick={() => navigate('/maternas')} style={{ marginTop: '1rem', background: 'var(--primary-color)', color: 'white', padding: '10px 20px', borderRadius: '12px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
         Volver
       </button>
     </div>
   );
 
   const info = calculatePregnancyInfo(materna.fechaEmbarazo);
+  const edad = new Date().getFullYear() - new Date(materna.fechaNacimiento).getFullYear();
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      style={{ maxWidth: '1600px', margin: '0 auto', padding: '0 20px', position: 'relative' }}
+      style={{ maxWidth: '900px', margin: '0 auto', padding: '0 12px 40px', position: 'relative' }}
     >
       {/* Decorative Blobs */}
-      <div className="blob" style={{ 
-        width: '400px', height: '400px', background: 'var(--primary-color)', 
-        top: '-100px', right: '-100px', filter: 'blur(100px)', opacity: 0.1 
-      }} />
-      <div className="blob" style={{ 
-        width: '300px', height: '300px', background: 'var(--secondary-color)', 
-        bottom: '100px', left: '-50px', filter: 'blur(80px)', opacity: 0.08 
-      }} />
+      <div className="blob" style={{ width: '300px', height: '300px', background: 'var(--primary-color)', top: '-80px', right: '-60px', filter: 'blur(90px)', opacity: 0.08 }} />
 
-      <motion.button 
+      {/* Back button */}
+      <motion.button
         variants={itemVariants}
         onClick={() => navigate('/maternas')}
-        whileHover={{ scale: 1.05, x: -5 }}
-        whileTap={{ scale: 0.95 }}
-        style={{ 
-          background: 'var(--card-bg)', 
+        whileHover={{ x: -3 }}
+        whileTap={{ scale: 0.97 }}
+        style={{
+          background: 'var(--card-bg)',
           border: '1px solid var(--border-color)',
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '8px', 
-          color: 'var(--text-main)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          color: 'var(--text-muted)',
           marginBottom: '1rem',
-          padding: '8px 16px',
-          borderRadius: '12px',
+          padding: '7px 14px',
+          borderRadius: '10px',
           fontWeight: '800',
-          fontSize: '0.75rem',
+          fontSize: '0.72rem',
           textTransform: 'uppercase',
-          letterSpacing: '1px',
-          boxShadow: 'var(--shadow-sm)',
+          letterSpacing: '0.8px',
           cursor: 'pointer',
           position: 'relative',
           zIndex: 1
         }}
       >
-        <ArrowLeft size={16} />
-        Volver
+        <ArrowLeft size={14} /> Volver
       </motion.button>
 
-      <div className="detail-grid-container" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Column 1: Profile Header & Alerts */}
-        <div style={{ display: 'grid', gap: '1rem' }}>
-          {/* Header Card */}
-          <motion.div variants={itemVariants} className="organic-card" style={{ 
-            padding: '1.2rem', 
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.2rem',
-            position: 'relative',
-            overflow: 'hidden',
+      {/* ─── Header Card ─── */}
+      <motion.div
+        variants={itemVariants}
+        className="organic-card"
+        style={{ padding: '1rem', marginBottom: '0.8rem', position: 'relative', zIndex: 1, overflow: 'hidden' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+          {/* Avatar */}
+          <div style={{
+            width: '52px', height: '52px', minWidth: '52px',
+            borderRadius: '16px',
+            background: 'var(--primary-color)15',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--primary-color)',
+            border: '1px solid var(--primary-color)30',
           }}>
-            <div style={{ 
-              width: 'clamp(60px, 15vw, 100px)', height: 'clamp(60px, 15vw, 100px)', borderRadius: '20px', 
-              background: 'var(--bg-color)', display: 'flex', alignItems: 'center', 
-              justifyContent: 'center', color: 'var(--primary-color)',
-              border: '1px solid var(--border-color)',
-              flexShrink: 0,
-            }}>
-              <Baby size={32} />
-            </div>
-            
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', fontWeight: '950', margin: 0, letterSpacing: '-1px', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {materna.nombre}
-                </h1>
-                <div style={{ 
-                  padding: '4px 12px', borderRadius: '20px', fontWeight: '900', fontSize: '0.65rem',
-                  textTransform: 'uppercase', letterSpacing: '0.5px',
-                  background: `${getRiskColor(materna.tipoRiesgo)}15`, color: getRiskColor(materna.tipoRiesgo),
-                  border: `1px solid ${getRiskColor(materna.tipoRiesgo)}30`
-                }}>
-                  {materna.tipoRiesgo}
-                </div>
-              </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600' }}>
-                <span style={{ color: 'var(--text-main)', fontWeight: '800' }}>{materna.documento}</span> • {new Date().getFullYear() - new Date(materna.fechaNacimiento).getFullYear()} años
-              </p>
-            </div>
-          </motion.div>
-          
-          {materna.alertas && (
-            <motion.div variants={itemVariants} className="organic-card" style={{ 
-              padding: '1.2rem', 
-              background: 'var(--error-color)10', 
-              border: '2px solid var(--error-color)30',
-              display: 'flex',
-              gap: '12px',
-              alignItems: 'flex-start'
-            }}>
-              <AlertTriangle size={24} color="var(--error-color)" style={{ flexShrink: 0, marginTop: '4px' }} />
-              <div>
-                <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '950', color: 'var(--error-color)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Alerta Clínica</h4>
-                <p style={{ margin: '4px 0 0', fontSize: '1rem', fontWeight: '800', color: 'var(--text-main)' }}>{materna.alertas}</p>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {/* Main Clinical Section (TOP) */}
-      <motion.div variants={itemVariants} className="organic-card" style={{ marginTop: '1.5rem', padding: '1.2rem' }}>
-        <MedicalEvents maternaId={id} />
-      </motion.div>
-
-      {/* Info Grid (BOTTOM) */}
-      <div className="detail-grid" style={{ position: 'relative', zIndex: 1, marginTop: '2rem' }}>
-        {/* Column 1: Pregnancy Tracker */}
-        <motion.div variants={itemVariants} className="organic-card" style={{ 
-          padding: '1.5rem', 
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
-             <div>
-                <h2 style={{ fontSize: '1.1rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
-                  <Heart color="var(--primary-color)" fill="var(--primary-color)" size={18} />
-                  Gestación
-                </h2>
-             </div>
-            <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '1.8rem', fontWeight: '950', color: 'var(--primary-color)', letterSpacing: '-1px' }}>{info.progress}%</span>
-            </div>
+            <Baby size={26} />
           </div>
 
-          <div style={{ width: '100%', height: '18px', background: 'var(--bg-color)', borderRadius: '10px', overflow: 'hidden', marginBottom: '1.5rem', padding: '3px', border: '1px solid var(--border-color)' }}>
-            <motion.div 
+          {/* Name + meta */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '3px' }}>
+              <h1 style={{
+                fontSize: 'clamp(1rem, 5vw, 1.6rem)',
+                fontWeight: '950',
+                margin: 0,
+                letterSpacing: '-0.5px',
+                color: 'var(--text-main)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '100%'
+              }}>
+                {materna.nombre}
+              </h1>
+              <span style={{
+                padding: '3px 10px', borderRadius: '20px', fontWeight: '900', fontSize: '0.6rem',
+                textTransform: 'uppercase', letterSpacing: '0.5px', flexShrink: 0,
+                background: `${getRiskColor(materna.tipoRiesgo)}15`,
+                color: getRiskColor(materna.tipoRiesgo),
+                border: `1px solid ${getRiskColor(materna.tipoRiesgo)}30`
+              }}>
+                {materna.tipoRiesgo}
+              </span>
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', fontWeight: '600', margin: 0 }}>
+              <span style={{ color: 'var(--text-main)', fontWeight: '800' }}>{materna.documento}</span>
+              <span style={{ margin: '0 6px', opacity: 0.4 }}>•</span>
+              {edad} años
+            </p>
+          </div>
+        </div>
+
+        {/* Pregnancy bar inside header */}
+        <div style={{ marginTop: '0.9rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Heart size={11} color="var(--primary-color)" fill="var(--primary-color)" /> Gestación
+            </span>
+            <span style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--primary-color)' }}>
+              {info.weeks}s {info.days}d · {info.progress}%
+            </span>
+          </div>
+          <div style={{ width: '100%', height: '8px', background: 'var(--bg-color)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${info.progress}%` }}
-              transition={{ duration: 1.5, ease: "circOut" }}
-              style={{ 
-                height: '100%', 
-                background: `linear-gradient(90deg, var(--primary-color), var(--accent-color))`, 
-                borderRadius: '6px',
-                boxShadow: 'var(--primary-glow) 0 2px 8px'
+              transition={{ duration: 1.2, ease: 'circOut' }}
+              style={{
+                height: '100%',
+                background: 'linear-gradient(90deg, var(--primary-color), var(--accent-color))',
+                borderRadius: '8px',
+                boxShadow: 'var(--primary-glow) 0 2px 6px'
               }}
             />
           </div>
+        </div>
+      </motion.div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8rem' }}>
-            {[
-              { label: 'EDD', val: info.edd.toLocaleDateString(), icon: <Calendar size={16} />, color: 'var(--secondary-color)' },
-              { label: 'SEMANAS', val: `${info.weeks}s, ${info.days}d`, icon: <Clock size={16} />, color: 'var(--primary-color)' }
-            ].map((stat, i) => (
-              <div key={i} style={{ padding: '0.8rem', borderRadius: '16px', background: 'var(--bg-color)', textAlign: 'center', border: '1px solid var(--border-color)' }}>
-                <div style={{ width: '30px', height: '30px', borderRadius: '10px', background: 'var(--card-bg)', margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color, border: '1px solid var(--border-color)' }}>
-                  {stat.icon}
-                </div>
-                <p style={{ fontSize: '0.6rem', fontWeight: '900', color: 'var(--text-muted)', letterSpacing: '0.5px' }}>{stat.label}</p>
-                <p style={{ fontSize: '0.9rem', fontWeight: '900', color: 'var(--text-main)' }}>{stat.val}</p>
-              </div>
-            ))}
+      {/* ─── Clinical Alert ─── */}
+      {materna.alertas && (
+        <motion.div
+          variants={itemVariants}
+          className="organic-card"
+          style={{
+            padding: '0.9rem 1rem',
+            marginBottom: '0.8rem',
+            background: 'var(--error-color)08',
+            border: '1.5px solid var(--error-color)25',
+            display: 'flex', gap: '10px', alignItems: 'flex-start',
+            position: 'relative', zIndex: 1
+          }}
+        >
+          <AlertTriangle size={18} color="var(--error-color)" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <div>
+            <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '950', color: 'var(--error-color)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Alerta Clínica</p>
+            <p style={{ margin: '3px 0 0', fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)' }}>{materna.alertas}</p>
           </div>
         </motion.div>
+      )}
 
-        {/* Column 2: Contact Info */}
-        <motion.div variants={itemVariants} className="organic-card" style={{ padding: '1.2rem' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: '950', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
-            <div style={{ padding: '6px', background: 'var(--primary-color)15', borderRadius: '10px' }}>
-              <MapPin size={18} color="var(--primary-color)" />
+      {/* ─── Info Row: EDD + Contact ─── */}
+      <motion.div
+        variants={itemVariants}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: '0.6rem',
+          marginBottom: '0.8rem',
+          position: 'relative', zIndex: 1
+        }}
+      >
+        {[
+          { icon: <Calendar size={14} />, label: 'Fecha Probable Parto', val: info.edd.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }), color: 'var(--secondary-color)' },
+          { icon: <Phone size={14} />, label: 'Teléfono', val: materna.telefono || 'No registrado', color: 'var(--primary-color)' },
+          { icon: <MapPin size={14} />, label: 'Dirección', val: materna.direccion || 'No registrada', color: 'var(--accent-color)' },
+          { icon: <User size={14} />, label: 'Contacto/Pareja', val: materna.contactoEmergencia || 'No registrado', color: 'var(--secondary-color)' },
+        ].map((item, i) => (
+          <div key={i} className="organic-card" style={{ padding: '0.75rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px', height: '32px', minWidth: '32px',
+              borderRadius: '10px',
+              background: `${item.color}15`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: item.color
+            }}>
+              {item.icon}
             </div>
-            Contacto
-          </h3>
-          <div style={{ display: 'grid', gap: '0.8rem' }}>
-            {[
-              { icon: <Phone size={16} />, label: 'Teléfono', val: materna.telefono || 'No registrado' },
-              { icon: <MapPin size={16} />, label: 'Dirección', val: materna.direccion || 'No registrada' },
-              { icon: <User size={16} />, label: 'Contacto/Pareja', val: materna.contactoEmergencia || 'No registrado' }
-            ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ color: 'var(--primary-color)' }}>{item.icon}</div>
-                <div>
-                  <p style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>{item.label}</p>
-                  <p style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-main)' }}>{item.val}</p>
-                </div>
-              </div>
-            ))}
+            <div style={{ minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: '0.6rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{item.label}</p>
+              <p style={{ margin: '2px 0 0', fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.val}</p>
+            </div>
           </div>
-        </motion.div>
-      </div>
+        ))}
+      </motion.div>
 
-      <style>{`
-        .detail-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1.5rem;
-          align-items: start;
-          margin-bottom: 2rem;
-        }
-
-        @media (min-width: 1024px) {
-          .detail-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
-          }
-        }
-      `}</style>
+      {/* ─── Medical Events ─── */}
+      <motion.div
+        variants={itemVariants}
+        className="organic-card"
+        style={{ padding: '1rem', position: 'relative', zIndex: 1 }}
+      >
+        <MedicalEvents maternaId={id} />
+      </motion.div>
     </motion.div>
   );
 };
