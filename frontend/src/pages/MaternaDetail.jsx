@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { 
@@ -10,11 +10,14 @@ import {
   MapPin, 
   Phone, 
   Heart,
-  Clock
+  Clock,
+  RefreshCw,
+  Package
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
 import MedicalEvents from '../components/MedicalEvents';
+import { useNotification } from '../context/NotificationContext';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -29,8 +32,12 @@ const itemVariants = {
 const MaternaDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { notify } = useNotification();
   const [materna, setMaterna] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paquetesAplicados, setPaquetesAplicados] = useState([]);
+  const [syncingId, setSyncingId] = useState(null); // id del paquete que se está sincronizando
+  const [eventosKey, setEventosKey] = useState(0); // fuerza recarga de MedicalEvents
 
   useEffect(() => {
     const fetchMaterna = async () => {
@@ -45,6 +52,47 @@ const MaternaDetail = () => {
     };
     fetchMaterna();
   }, [id]);
+
+  // Detectar qué paquetes tiene aplicados esta materna (desde sus eventos)
+  useEffect(() => {
+    const fetchPaquetesAplicados = async () => {
+      try {
+        const res = await api.get(`/eventos/materna/${id}`);
+        const eventos = res.data;
+        // Agrupar por paqueteId (solo los que tienen uno)
+        const mapPaquetes = {};
+        eventos.forEach(ev => {
+          if (ev.paqueteId && !mapPaquetes[ev.paqueteId]) {
+            mapPaquetes[ev.paqueteId] = { id: ev.paqueteId, nombre: ev.paquete?.nombre || `Paquete #${ev.paqueteId}` };
+          }
+        });
+        // Obtener nombres reales desde la API de paquetes
+        const paqRes = await api.get('/paquetes');
+        const paquetesDB = paqRes.data;
+        const aplicados = Object.values(mapPaquetes).map(p => {
+          const found = paquetesDB.find(pq => pq.id === p.id);
+          return found ? { id: found.id, nombre: found.nombre } : p;
+        });
+        setPaquetesAplicados(aplicados);
+      } catch (err) {
+        console.error('Error al obtener paquetes aplicados:', err);
+      }
+    };
+    fetchPaquetesAplicados();
+  }, [id, eventosKey]);
+
+  const handleSincronizar = async (paqueteId, paqueteNombre) => {
+    setSyncingId(paqueteId);
+    try {
+      await api.post(`/paquetes/${paqueteId}/sincronizar-materna/${id}`);
+      notify(`✅ "${paqueteNombre}" sincronizado correctamente`, 'success');
+      setEventosKey(k => k + 1); // recarga la tabla de eventos
+    } catch (err) {
+      notify(`Error al sincronizar "${paqueteNombre}"`, 'error');
+    } finally {
+      setSyncingId(null);
+    }
+  };
 
   const calculatePregnancyInfo = (pregnancyDate) => {
     const start = new Date(pregnancyDate);
@@ -251,6 +299,57 @@ const MaternaDetail = () => {
                   </motion.div>
                 ))}
               </div>
+
+              {/* ─── Card: Paquetes Aplicados ─── */}
+              {paquetesAplicados.length > 0 && (
+                <motion.div variants={itemVariants} className="organic-card" style={{ padding: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.8rem' }}>
+                    <Package size={14} color="var(--primary-color)" />
+                    <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '950', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Paquetes Aplicados</p>
+                  </div>
+                  <div style={{ display: 'grid', gap: '8px' }}>
+                    {paquetesAplicados.map(pq => (
+                      <div key={pq.id} style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px',
+                        padding: '8px 10px', borderRadius: '10px',
+                        background: 'var(--bg-color)', border: '1px solid var(--border-color)'
+                      }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                          {pq.nombre}
+                        </span>
+                        <motion.button
+                          whileHover={{ scale: 1.08 }}
+                          whileTap={{ scale: 0.93 }}
+                          onClick={() => handleSincronizar(pq.id, pq.nombre)}
+                          disabled={syncingId === pq.id}
+                          title="Sincronizar este paquete con la materna"
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '5px',
+                            padding: '6px 10px', borderRadius: '8px', border: 'none',
+                            background: syncingId === pq.id ? 'var(--border-color)' : 'var(--primary-color)15',
+                            color: syncingId === pq.id ? 'var(--text-muted)' : 'var(--primary-color)',
+                            fontSize: '0.7rem', fontWeight: '900', cursor: syncingId === pq.id ? 'not-allowed' : 'pointer',
+                            flexShrink: 0, whiteSpace: 'nowrap'
+                          }}
+                        >
+                          <motion.span
+                            animate={syncingId === pq.id ? { rotate: 360 } : { rotate: 0 }}
+                            transition={syncingId === pq.id ? { duration: 0.8, repeat: Infinity, ease: 'linear' } : {}}
+                            style={{ display: 'flex' }}
+                          >
+                            <RefreshCw size={12} />
+                          </motion.span>
+                          {syncingId === pq.id ? 'Sincronizando...' : 'Sincronizar'}
+                        </motion.button>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: '8px 0 0', lineHeight: 1.4 }}>
+                    Reemplaza los eventos PENDIENTES del paquete con la versión actual.
+                  </p>
+                </motion.div>
+              )}
+
           </div>
 
           {/* Main Column: Medical Events */}
@@ -260,7 +359,7 @@ const MaternaDetail = () => {
             style={{ padding: '0', overflow: 'hidden', height: '100%' }}
           >
               <div style={{ padding: '1.5rem', width: '100%' }}>
-                <MedicalEvents maternaId={id} />
+                <MedicalEvents key={eventosKey} maternaId={id} />
               </div>
           </motion.div>
       </div>

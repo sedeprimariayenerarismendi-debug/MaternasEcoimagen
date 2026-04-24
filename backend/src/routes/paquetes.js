@@ -56,7 +56,7 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// UPDATE /api/paquetes/:id - Editar paquete
+// UPDATE /api/paquetes/:id - Editar paquete (SIN propagación automática a maternas)
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
@@ -66,116 +66,56 @@ router.put('/:id', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'El nombre es obligatorio' });
     }
 
-    // Usar transacción para asegurar sincronización consistente
     const result = await prisma.$transaction(async (tx) => {
-        // 1. Obtener estado actual
         const currentPaquete = await tx.paqueteEventos.findUnique({
             where: { id: parseInt(id) },
             include: { plantillas: true }
         });
-
         if (!currentPaquete) throw new Error('Paquete no encontrado');
 
-        // 2. Identificar cambios
-        const incomingPlantillaIds = plantillas.filter(p => p.id).map(p => p.id);
+        // Identificar plantillas eliminadas (cast a int para evitar string vs number mismatch)
+        const incomingPlantillaIds = plantillas.filter(p => p.id).map(p => parseInt(p.id));
         const plantillasToRemove = currentPaquete.plantillas.filter(p => !incomingPlantillaIds.includes(p.id));
-        
-        // 3. Actualizar info básica del paquete
+
+        // Actualizar info básica del paquete
         const updatedPaquete = await tx.paqueteEventos.update({
             where: { id: parseInt(id) },
             data: { nombre, descripcion, trimestre },
-            include: { plantillas: true }
         });
 
-        // 4. Eliminar plantillas removidas y sus eventos PENDIENTES vinculados
+        // Eliminar solo las plantillas removidas (NO tocar eventos de maternas)
         for (const p of plantillasToRemove) {
-            await tx.eventoMedico.deleteMany({
-                where: { plantillaId: p.id, estado: 'PENDIENTE' }
-            });
             await tx.plantillaEvento.delete({ where: { id: p.id } });
         }
 
-        // 5. Procesar cada plantilla (Upsert + Propagación)
+        // Upsert plantillas (solo en la tabla de plantillas, sin propagar a maternas)
         const processedPlantillas = [];
         for (const pMap of plantillas) {
             const pData = {
                 tipo: pMap.tipo,
-                descripcion: pMap.descripcion,
+                descripcion: pMap.descripcion || '',
                 semanasRelativas: parseInt(pMap.semanasRelativas) || 0,
                 esObligatorio: !!pMap.esObligatorio,
                 esControl: !!pMap.esControl,
-                codigoCUPS: pMap.codigoCUPS,
+                codigoCUPS: pMap.codigoCUPS || null,
                 cantidad: parseInt(pMap.cantidad) || 1,
-                trimestre: pMap.trimestre || updatedPaquete.trimestre
+                trimestre: pMap.trimestre || trimestre || null
             };
 
             if (pMap.id) {
-                // ACTUALIZAR plantilla existente
                 const updatedP = await tx.plantillaEvento.update({
                     where: { id: pMap.id },
                     data: pData
                 });
                 processedPlantillas.push(updatedP);
-
-                // PROPAGAR cambios a eventos PENDIENTES
-                const eventsToUpdate = await tx.eventoMedico.findMany({
-                    where: { plantillaId: pMap.id, estado: 'PENDIENTE' },
-                    include: { materna: true }
-                });
-
-                for (const ev of eventsToUpdate) {
-                    const startDate = new Date(ev.materna.fechaEmbarazo);
-                    const fechaProgramada = new Date(startDate);
-                    fechaProgramada.setDate(fechaProgramada.getDate() + (pData.semanasRelativas * 7));
-
-                    await tx.eventoMedico.update({
-                        where: { id: ev.id },
-                        data: {
-                            tipo: pData.tipo,
-                            descripcion: pData.descripcion,
-                            fechaProgramada,
-                            esObligatorio: pData.esObligatorio,
-                            esControl: pData.esControl,
-                            codigoCUPS: pData.codigoCUPS,
-                            cantidad: pData.cantidad,
-                            trimestre: pData.trimestre
-                        }
-                    });
-                }
             } else {
-                // CREAR nueva plantilla y añadirla a maternas que ya tienen el paquete
                 const newP = await tx.plantillaEvento.create({
                     data: { ...pData, paqueteId: parseInt(id) }
                 });
                 processedPlantillas.push(newP);
-
-                const maternasConPaquete = await tx.materna.findMany({
-                    where: {
-                        eventos: {
-                            some: { paqueteId: parseInt(id) }
-                        }
-                    }
-                });
-
-                for (const m of maternasConPaquete) {
-                    const startDate = new Date(m.fechaEmbarazo);
-                    const fechaProgramada = new Date(startDate);
-                    fechaProgramada.setDate(fechaProgramada.getDate() + (pData.semanasRelativas * 7));
-
-                    await tx.eventoMedico.create({
-                        data: {
-                            ...pData,
-                            fechaProgramada,
-                            paqueteId: parseInt(id),
-                            plantillaId: newP.id,
-                            maternaId: m.id,
-                            estado: 'PENDIENTE',
-                            estaAgendado: false
-                        }
-                    });
-                }
             }
         }
+
         return { ...updatedPaquete, plantillas: processedPlantillas };
     });
 
@@ -183,6 +123,66 @@ router.put('/:id', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al actualizar paquete' });
+  }
+});
+
+// POST /api/paquetes/:paqueteId/sincronizar-materna/:maternaId
+// Aplica el estado actual del paquete a UNA materna (reemplaza eventos PENDIENTES del paquete)
+router.post('/:paqueteId/sincronizar-materna/:maternaId', authMiddleware, async (req, res) => {
+  try {
+    const { paqueteId, maternaId } = req.params;
+
+    const materna = await prisma.materna.findUnique({ where: { id: parseInt(maternaId) } });
+    const paquete = await prisma.paqueteEventos.findUnique({
+      where: { id: parseInt(paqueteId) },
+      include: { plantillas: true }
+    });
+
+    if (!materna || !paquete) {
+      return res.status(404).json({ error: 'Paciente o paquete no encontrado' });
+    }
+
+    const startDate = new Date(materna.fechaEmbarazo);
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Eliminar eventos PENDIENTES de ese paquete para esa materna
+      await tx.eventoMedico.deleteMany({
+        where: {
+          maternaId: parseInt(maternaId),
+          paqueteId: parseInt(paqueteId),
+          estado: 'PENDIENTE'
+        }
+      });
+
+      // 2. Recrear desde las plantillas actuales del paquete
+      const eventosParaCrear = paquete.plantillas.map(p => {
+        const fechaProgramada = new Date(startDate);
+        fechaProgramada.setDate(fechaProgramada.getDate() + (p.semanasRelativas * 7));
+        return {
+          tipo: p.tipo,
+          descripcion: p.descripcion || '',
+          fechaProgramada,
+          esObligatorio: !!p.esObligatorio,
+          esControl: !!p.esControl,
+          codigoCUPS: p.codigoCUPS || null,
+          cantidad: p.cantidad || 1,
+          trimestre: p.trimestre || paquete.trimestre || null,
+          paqueteId: paquete.id,
+          plantillaId: p.id,
+          maternaId: materna.id,
+          estado: 'PENDIENTE',
+          estaAgendado: false
+          // semanasRelativas NO se incluye: pertenece a PlantillaEvento, no a EventoMedico
+        };
+      });
+
+      await tx.eventoMedico.createMany({ data: eventosParaCrear });
+    });
+
+    res.json({ message: 'Paquete sincronizado correctamente', paquete: paquete.nombre });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al sincronizar paquete' });
   }
 });
 

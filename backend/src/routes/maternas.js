@@ -153,12 +153,6 @@ router.get('/:id', authMiddleware, async (req, res) => {
     const { id } = req.params;
     const maternaId = parseInt(id);
 
-    // Sincronizar bajo demanda (versión simple)
-    try {
-        await syncMaternaWithPackage(maternaId);
-    } catch (e) {
-        console.error('Error sync en detalle:', e);
-    }
 
     const materna = await prisma.materna.findUnique({
       where: { id: maternaId },
