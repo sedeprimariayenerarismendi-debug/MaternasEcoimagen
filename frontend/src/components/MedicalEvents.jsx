@@ -150,19 +150,14 @@ const MedicalEvents = ({ maternaId }) => {
     const evento = eventos.find(e => e.id === id);
     if (!evento) return;
     if (currentEstado === 'PENDIENTE') {
-        const isConsulta = evento.tipo?.toUpperCase()?.trim() === 'CONSULTA';
-        const isLab = evento.tipo?.toUpperCase()?.trim() === 'LABORATORIO';
-        const isControl = !!evento.esControl && isConsulta;
-
-        if (isControl || isLab) {
-            setCompletingEvent(evento);
-            setCompleteData({
-                fechaRealizada: new Date().toISOString().split('T')[0],
-                resultado: evento.resultado || ''
-            });
-            setIsCompleteModalOpen(true);
-            return;
-        }
+        // Mostrar siempre el modal para registrar la fecha de asistencia
+        setCompletingEvent(evento);
+        setCompleteData({
+            fechaRealizada: new Date().toISOString().split('T')[0],
+            resultado: evento.resultado || ''
+        });
+        setIsCompleteModalOpen(true);
+        return;
     }
 
     try {
@@ -1102,18 +1097,23 @@ const MedicalEvents = ({ maternaId }) => {
         {isCompleteModalOpen && completingEvent && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '20px' }}>
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="organic-card" style={{ width: '100%', maxWidth: '450px', padding: '2rem', boxShadow: 'var(--shadow-xl)' }}>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: '950', color: 'var(--text-main)', marginBottom: '1.5rem' }}>{completingEvent.tipo === 'LABORATORIO' ? 'Registrar Resultado' : 'Programar Siguiente Control'}</h3>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: '950', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Finalizar Actividad</h3>
+              
+              <div style={{ marginBottom: '1.5rem', padding: '12px', background: 'var(--primary-color)05', borderRadius: '12px', border: '1px solid var(--primary-color)15' }}>
+                  <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Actividad</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '1rem', fontWeight: '900', color: 'var(--text-main)' }}>{completingEvent.descripcion}</p>
+              </div>
+
               <form onSubmit={handleFinishCompletion} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                {completingEvent.tipo === 'CONSULTA' && completingEvent.esControl && (
-                  <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>SIGUIENTE CONTROL</label>
-                    <input type="date" required value={completeData.fechaRealizada} onChange={e => setCompleteData({...completeData, fechaRealizada: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)' }} />
-                  </div>
-                )}
+                <div>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>FECHA DE ASISTENCIA</label>
+                    <input type="date" required value={completeData.fechaRealizada} onChange={e => setCompleteData({...completeData, fechaRealizada: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--primary-color)40', background: 'white', fontWeight: '700' }} />
+                </div>
+                
                 {completingEvent.tipo === 'LABORATORIO' && (
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>RESULTADO</label>
-                    <textarea required placeholder="Ingrese los resultados..." value={completeData.resultado} onChange={e => setCompleteData({...completeData, resultado: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', minHeight: '100px', resize: 'none' }} />
+                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>RESULTADO / NOTAS</label>
+                    <textarea placeholder="Ingrese los resultados..." value={completeData.resultado} onChange={e => setCompleteData({...completeData, resultado: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', minHeight: '100px', resize: 'none' }} />
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', flexWrap: 'wrap' }}>
