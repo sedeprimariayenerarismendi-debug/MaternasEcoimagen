@@ -11,7 +11,8 @@ import {
   Calendar,
   CreditCard,
   AlertTriangle,
-  ClipboardList
+  ClipboardList,
+  Folder
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -38,7 +39,8 @@ const Maternas = () => {
     alertas: '',
     telefono: '',
     direccion: '',
-    contactoEmergencia: ''
+    contactoEmergencia: '',
+    carpetaEntregada: false
   });
 
   const fetchMaternas = async () => {
@@ -78,7 +80,8 @@ const Maternas = () => {
         alertas: materna.alertas || '',
         telefono: materna.telefono || '',
         direccion: materna.direccion || '',
-        contactoEmergencia: materna.contactoEmergencia || ''
+        contactoEmergencia: materna.contactoEmergencia || '',
+        carpetaEntregada: materna.carpetaEntregada || false
       });
     } else {
       setCurrentMaterna(null);
@@ -93,7 +96,8 @@ const Maternas = () => {
         alertas: '',
         telefono: '',
         direccion: '',
-        contactoEmergencia: ''
+        contactoEmergencia: '',
+        carpetaEntregada: false
       });
     }
     setIsModalOpen(true);
@@ -244,6 +248,7 @@ const Maternas = () => {
                 <th style={{ padding: '1rem 1.2rem' }}>DOCUMENTO</th>
                 <th style={{ padding: '1rem 1.2rem' }}>F. EMBARAZO</th>
                 <th style={{ padding: '1rem 1.2rem' }}>RIESGO</th>
+                <th style={{ padding: '1rem 1.2rem' }}>CARPETA</th>
                 <th style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>ACCIONES</th>
               </tr>
             </thead>
@@ -279,6 +284,18 @@ const Maternas = () => {
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30` }}>
                       <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: getRiskColor(m.tipoRiesgo) }} />
                       {m.tipoRiesgo}
+                    </div>
+                  </td>
+                  <td style={{ padding: '1rem 1.2rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ 
+                      display: 'inline-flex', alignItems: 'center', gap: '6px', 
+                      padding: '4px 10px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '800',
+                      background: m.carpetaEntregada ? 'var(--success-color)15' : 'var(--bg-color)',
+                      color: m.carpetaEntregada ? 'var(--success-color)' : 'var(--text-muted)',
+                      border: `1px solid ${m.carpetaEntregada ? 'var(--success-color)30' : 'var(--border-color)'}`
+                    }}>
+                      <Folder size={14} />
+                      {m.carpetaEntregada ? 'Entregada' : 'Falta'}
                     </div>
                   </td>
                   <td style={{ padding: '1rem 1.2rem', textAlign: 'right', borderBottom: '1px solid var(--border-color)' }}>
@@ -324,9 +341,22 @@ const Maternas = () => {
                     <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{m.documento}</p>
                   </div>
                 </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '15px', fontSize: '0.65rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30`, flexShrink: 0 }}>
-                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: getRiskColor(m.tipoRiesgo) }} />
-                  {m.tipoRiesgo}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '15px', fontSize: '0.65rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30`, flexShrink: 0 }}>
+                    <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: getRiskColor(m.tipoRiesgo) }} />
+                    {m.tipoRiesgo}
+                  </div>
+                  <div style={{ 
+                    display: 'inline-flex', alignItems: 'center', gap: '4px', 
+                    padding: '3px 8px', borderRadius: '15px', fontSize: '0.65rem', fontWeight: '900',
+                    background: m.carpetaEntregada ? 'var(--success-color)15' : 'var(--bg-color)',
+                    color: m.carpetaEntregada ? 'var(--success-color)' : 'var(--text-muted)',
+                    border: `1px solid ${m.carpetaEntregada ? 'var(--success-color)30' : 'var(--border-color)'}`,
+                    flexShrink: 0 
+                  }}>
+                    <Folder size={11} />
+                    {m.carpetaEntregada ? 'Carpeta' : 'Falta'}
+                  </div>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -446,6 +476,7 @@ const Maternas = () => {
                   <input type="text" value={formData.direccion} onChange={e => setFormData({...formData, direccion: e.target.value})} placeholder="Ej. Calle 10 #5-20, Cúcuta" style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%' }} />
                 </div>
 
+
                 <div>
                   <label style={{ fontSize: '0.85rem', fontWeight: '800', marginBottom: '10px', display: 'block', color: 'var(--text-main)', letterSpacing: '0.5px' }}>APLICAR PAQUETES DE ESTUDIOS (OPCIONAL)</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -516,6 +547,39 @@ const Maternas = () => {
                     placeholder="Ej. Alergia a la penicilina, antecedente de preeclampsia..." 
                     style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%', minHeight: '80px', resize: 'none' }} 
                   />
+                </div>
+                
+                <div style={{ 
+                  background: 'var(--bg-color)', padding: '1.2rem', borderRadius: '20px', border: '1px solid var(--border-color)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.5rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: formData.carpetaEntregada ? 'var(--success-color)15' : 'var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: formData.carpetaEntregada ? 'var(--success-color)' : 'var(--text-muted)' }}>
+                      <Folder size={22} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '0.9rem', fontWeight: '950', color: 'var(--text-main)', margin: 0 }}>Entrega de Carpeta Física</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>Marcar si la paciente ya recibió su carpeta.</p>
+                    </div>
+                  </div>
+                  <motion.button 
+                    type="button"
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setFormData({...formData, carpetaEntregada: !formData.carpetaEntregada})}
+                    style={{ 
+                      width: '54px', height: '28px', borderRadius: '20px', 
+                      background: formData.carpetaEntregada ? 'var(--success-color)' : 'var(--border-color)',
+                      position: 'relative', border: 'none', cursor: 'pointer', transition: 'all 0.3s'
+                    }}
+                  >
+                    <motion.div 
+                      animate={{ x: formData.carpetaEntregada ? 28 : 3 }}
+                      style={{ 
+                        width: '22px', height: '22px', borderRadius: '50%', background: 'white',
+                        position: 'absolute', top: '3px', left: 0, boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                      }}
+                    />
+                  </motion.button>
                 </div>
                 
                 <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}

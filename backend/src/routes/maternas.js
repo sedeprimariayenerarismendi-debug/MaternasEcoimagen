@@ -72,6 +72,7 @@ router.post('/', authMiddleware, async (req, res) => {
         telefono,
         direccion,
         contactoEmergencia,
+        carpetaEntregada: !!req.body.carpetaEntregada,
         creadaPorId: req.user.id
       },
       include: {
@@ -116,6 +117,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (telefono !== undefined) updateData.telefono = telefono;
     if (direccion !== undefined) updateData.direccion = direccion;
     if (contactoEmergencia !== undefined) updateData.contactoEmergencia = contactoEmergencia;
+    if (req.body.carpetaEntregada !== undefined) updateData.carpetaEntregada = !!req.body.carpetaEntregada;
 
     const materna = await prisma.materna.update({
       where: { id: parseInt(id) },

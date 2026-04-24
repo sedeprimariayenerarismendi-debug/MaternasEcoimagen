@@ -12,7 +12,8 @@ import {
   Heart,
   Clock,
   RefreshCw,
-  Package
+  Package,
+  Folder
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -118,6 +119,17 @@ const MaternaDetail = () => {
     const edd = new Date(start);
     edd.setDate(edd.getDate() + 280);
     return { progress, weeks, days, edd };
+  };
+
+  const handleToggleCarpeta = async () => {
+    try {
+      const newVal = !materna.carpetaEntregada;
+      await api.put(`/maternas/${id}`, { carpetaEntregada: newVal });
+      setMaterna({ ...materna, carpetaEntregada: newVal });
+      notify(`Carpeta marcada como ${newVal ? 'ENTREGADA' : 'NO ENTREGADA'}`, 'success');
+    } catch (err) {
+      notify('Error al actualizar estado de la carpeta', 'error');
+    }
   };
 
   const getRiskColor = (risk) => {
@@ -264,6 +276,47 @@ const MaternaDetail = () => {
                       }}
                     />
                   </div>
+                </div>
+
+                {/* Folder Delivery status line */}
+                <div style={{ 
+                  marginTop: '1.2rem', paddingTop: '1.2rem', 
+                  borderTop: '1px solid var(--border-color)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ 
+                      width: '32px', height: '32px', borderRadius: '8px', 
+                      background: materna.carpetaEntregada ? 'var(--success-color)15' : 'var(--border-color)', 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                      color: materna.carpetaEntregada ? 'var(--success-color)' : 'var(--text-muted)' 
+                    }}>
+                      <Folder size={16} />
+                    </div>
+                    <div>
+                      <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '900', color: 'var(--text-main)', letterSpacing: '0.2px' }}>CARPETA FÍSICA</p>
+                      <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+                        {materna.carpetaEntregada ? 'La paciente ya tiene su carpeta' : 'Pendiente por entregar carpeta'}
+                      </p>
+                    </div>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleToggleCarpeta}
+                    style={{
+                      padding: '8px 16px', borderRadius: '12px', border: '1px solid',
+                      borderColor: materna.carpetaEntregada ? 'var(--success-color)30' : 'var(--border-color)',
+                      background: materna.carpetaEntregada ? 'var(--success-color)15' : 'var(--bg-color)',
+                      color: materna.carpetaEntregada ? 'var(--success-color)' : 'var(--text-muted)',
+                      display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', fontWeight: '900',
+                      cursor: 'pointer', transition: 'all 0.3s',
+                      boxShadow: materna.carpetaEntregada ? '0 4px 12px var(--success-color)20' : 'none'
+                    }}
+                  >
+                    <Folder size={14} />
+                    {materna.carpetaEntregada ? 'ENTREGADA' : 'MARCAR ENTREGA'}
+                  </motion.button>
                 </div>
               </motion.div>
 
