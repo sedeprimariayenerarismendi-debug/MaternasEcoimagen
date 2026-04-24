@@ -147,4 +147,39 @@ router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/maternas/:id - obtener detalle de una materna
+router.get('/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const maternaId = parseInt(id);
+
+    // Sincronizar bajo demanda (versión simple)
+    try {
+        await syncMaternaWithPackage(maternaId);
+    } catch (e) {
+        console.error('Error sync en detalle:', e);
+    }
+
+    const materna = await prisma.materna.findUnique({
+      where: { id: maternaId },
+      include: {
+        creadaPor: { select: { nombre: true } },
+        eventos: { 
+            orderBy: { fechaProgramada: 'asc' },
+            include: { prestadores: true } 
+        }
+      }
+    });
+
+    if (!materna) {
+      return res.status(404).json({ error: 'Paciente no encontrada' });
+    }
+
+    res.json(materna);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al obtener detalle de materna' });
+  }
+});
+
 module.exports = router;

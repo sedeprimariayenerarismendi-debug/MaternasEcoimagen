@@ -35,9 +35,8 @@ const MaternaDetail = () => {
   useEffect(() => {
     const fetchMaterna = async () => {
       try {
-        const res = await api.get('/maternas');
-        const found = res.data.find(m => m.id === parseInt(id));
-        setMaterna(found);
+        const res = await api.get(`/maternas/${id}`);
+        setMaterna(res.data);
         setLoading(false);
       } catch (err) {
         console.error(err);
