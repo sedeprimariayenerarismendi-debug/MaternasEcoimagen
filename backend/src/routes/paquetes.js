@@ -126,6 +126,49 @@ router.put('/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/paquetes/check-sync/:maternaId
+// Devuelve los IDs de paquetes que necesitan sincronización para esta materna
+router.get('/check-sync/:maternaId', authMiddleware, async (req, res) => {
+  try {
+    const { maternaId } = req.params;
+    const mid = parseInt(maternaId);
+
+    // Obtener todos los eventos de la materna que pertenecen a algún paquete
+    const eventos = await prisma.eventoMedico.findMany({
+      where: { maternaId: mid, paqueteId: { not: null } },
+      select: { paqueteId: true, createdAt: true }
+    });
+
+    if (eventos.length === 0) return res.json({ desactualizados: [] });
+
+    // Agrupar: para cada paquete, obtener el createdAt más reciente de sus eventos en esta materna
+    const mapaFechas = {};
+    eventos.forEach(ev => {
+      const pid = ev.paqueteId;
+      if (!mapaFechas[pid] || ev.createdAt > mapaFechas[pid]) {
+        mapaFechas[pid] = ev.createdAt;
+      }
+    });
+
+    // Obtener los paquetes involucrados con su updatedAt
+    const paqueteIds = Object.keys(mapaFechas).map(Number);
+    const paquetes = await prisma.paqueteEventos.findMany({
+      where: { id: { in: paqueteIds } },
+      select: { id: true, updatedAt: true }
+    });
+
+    // Comparar: si paquete.updatedAt > createdAt más reciente de eventos → desactualizado
+    const desactualizados = paquetes
+      .filter(pq => new Date(pq.updatedAt) > new Date(mapaFechas[pq.id]))
+      .map(pq => pq.id);
+
+    res.json({ desactualizados });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al verificar sincronización' });
+  }
+});
+
 // POST /api/paquetes/:paqueteId/sincronizar-materna/:maternaId
 // Aplica el estado actual del paquete a UNA materna (reemplaza eventos PENDIENTES del paquete)
 router.post('/:paqueteId/sincronizar-materna/:maternaId', authMiddleware, async (req, res) => {
