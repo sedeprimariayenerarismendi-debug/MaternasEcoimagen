@@ -9,7 +9,7 @@ export const ThemeProvider = ({ children }) => {
     secondaryColor: '#3B82F6',
     accentColor: '#F472B6',
     darkMode: false,
-    clinicName: 'Clínica Maternas',
+    clinicName: 'Dulce espera',
   });
 
   const fetchTheme = async () => {

@@ -55,7 +55,7 @@ const Sidebar = () => {
         </div>
         <h1 style={{ fontSize: '1.4rem', fontWeight: '950', letterSpacing: '-1px', color: 'var(--text-main)' }}>{config.clinicName}</h1>
       </div>
-      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '3.5rem', marginLeft: '50px' }}>Clinical Suite</p>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '3.5rem', marginLeft: '50px' }}>Ecoimagen salud</p>
 
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {filteredMenu.map((item) => (

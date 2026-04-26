@@ -33,7 +33,7 @@ async function main() {
         secondaryColor: '#3B82F6',
         accentColor: '#F472B6',
         darkMode: false,
-        clinicName: 'Clínica Maternas',
+        clinicName: 'Dulce espera',
       },
     });
     console.log('✅ Configuración de tema creada');

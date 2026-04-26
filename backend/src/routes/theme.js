@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
           secondaryColor: '#3B82F6',
           accentColor: '#F472B6',
           darkMode: false,
-          clinicName: 'Clínica Maternas',
+          clinicName: 'Dulce espera',
         },
       });
     }
@@ -41,7 +41,7 @@ router.put('/', authMiddleware, adminMiddleware, async (req, res) => {
           secondaryColor: secondaryColor || '#3B82F6',
           accentColor: accentColor || '#F472B6',
           darkMode: darkMode ?? false,
-          clinicName: clinicName || 'Clínica Maternas',
+          clinicName: clinicName || 'Dulce espera',
           logoUrl: logoUrl || null,
         },
       });
