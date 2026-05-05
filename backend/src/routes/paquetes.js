@@ -188,6 +188,18 @@ router.post('/:paqueteId/sincronizar-materna/:maternaId', authMiddleware, async 
     const startDate = new Date(materna.fechaEmbarazo);
 
     await prisma.$transaction(async (tx) => {
+      // 0. Encontrar eventos que ya no están PENDIENTES (ej. REALIZADO, CANCELADO) de este paquete
+      const eventosNoPendientes = await tx.eventoMedico.findMany({
+        where: {
+          maternaId: parseInt(maternaId),
+          paqueteId: parseInt(paqueteId),
+          estado: { not: 'PENDIENTE' },
+          plantillaId: { not: null }
+        },
+        select: { plantillaId: true }
+      });
+      const plantillasCompletadasIds = eventosNoPendientes.map(e => e.plantillaId);
+
       // 1. Eliminar eventos PENDIENTES de ese paquete para esa materna
       await tx.eventoMedico.deleteMany({
         where: {
@@ -197,8 +209,11 @@ router.post('/:paqueteId/sincronizar-materna/:maternaId', authMiddleware, async 
         }
       });
 
-      // 2. Recrear desde las plantillas actuales del paquete
-      const eventosParaCrear = paquete.plantillas.map(p => {
+      // 2. Filtrar plantillas que ya tienen un evento completado/cancelado
+      const plantillasPendientes = paquete.plantillas.filter(p => !plantillasCompletadasIds.includes(p.id));
+
+      // 3. Recrear desde las plantillas filtradas
+      const eventosParaCrear = plantillasPendientes.map(p => {
         const fechaProgramada = new Date(startDate);
         fechaProgramada.setDate(fechaProgramada.getDate() + (p.semanasRelativas * 7));
         return {
@@ -258,8 +273,22 @@ router.post('/aplicar/:paqueteId/materna/:maternaId', authMiddleware, async (req
       return res.status(404).json({ error: 'Paciente o paquete no encontrado' });
     }
 
+    // Evitar multiplicar eventos si ya hay algunos creados de este paquete
+    const eventosExistentes = await prisma.eventoMedico.findMany({
+      where: {
+        maternaId: parseInt(maternaId),
+        paqueteId: parseInt(paqueteId),
+        plantillaId: { not: null },
+        estado: { not: 'PENDIENTE' }
+      },
+      select: { plantillaId: true }
+    });
+    const plantillasExistentesIds = eventosExistentes.map(e => e.plantillaId);
+
     const startDate = new Date(materna.fechaEmbarazo);
-    const eventosParaCrear = paquete.plantillas.map(p => {
+    const plantillasNuevas = paquete.plantillas.filter(p => !plantillasExistentesIds.includes(p.id));
+
+    const eventosParaCrear = plantillasNuevas.map(p => {
       const fechaProgramada = new Date(startDate);
       fechaProgramada.setDate(fechaProgramada.getDate() + (p.semanasRelativas * 7));
       

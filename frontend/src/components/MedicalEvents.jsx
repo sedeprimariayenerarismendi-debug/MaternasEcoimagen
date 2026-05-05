@@ -47,7 +47,8 @@ const MedicalEvents = ({ maternaId }) => {
   const [completingEvent, setCompletingEvent] = useState(null);
   const [completeData, setCompleteData] = useState({
       fechaRealizada: new Date().toISOString().split('T')[0],
-      resultado: ''
+      resultado: '',
+      fechaSiguienteControl: ''
   });
   
   const [formData, setFormData] = useState({
@@ -150,11 +151,14 @@ const MedicalEvents = ({ maternaId }) => {
     const evento = eventos.find(e => e.id === id);
     if (!evento) return;
     if (currentEstado === 'PENDIENTE') {
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + 30); // 30 days default
         // Mostrar siempre el modal para registrar la fecha de asistencia
         setCompletingEvent(evento);
         setCompleteData({
             fechaRealizada: new Date().toISOString().split('T')[0],
-            resultado: evento.resultado || ''
+            resultado: evento.resultado || '',
+            fechaSiguienteControl: nextDate.toISOString().split('T')[0]
         });
         setIsCompleteModalOpen(true);
         return;
@@ -215,7 +219,7 @@ const MedicalEvents = ({ maternaId }) => {
             await api.post('/eventos', {
                 tipo: 'CONSULTA',
                 descripcion: nextDesc,
-                fechaProgramada: completeData.fechaRealizada,
+                fechaProgramada: completeData.fechaSiguienteControl || completeData.fechaRealizada,
                 esObligatorio: true,
                 esControl: true,
                 maternaId,
@@ -1114,6 +1118,12 @@ const MedicalEvents = ({ maternaId }) => {
                   <div>
                     <label style={{ fontSize: '0.75rem', fontWeight: '900', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>RESULTADO / NOTAS</label>
                     <textarea placeholder="Ingrese los resultados..." value={completeData.resultado} onChange={e => setCompleteData({...completeData, resultado: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', minHeight: '100px', resize: 'none' }} />
+                  </div>
+                )}
+                {completingEvent.tipo === 'CONSULTA' && completingEvent.esControl && (
+                  <div>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>FECHA DEL SIGUIENTE CONTROL</label>
+                    <input type="date" value={completeData.fechaSiguienteControl} onChange={e => setCompleteData({...completeData, fechaSiguienteControl: e.target.value})} required style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--primary-color)40', background: 'white', fontWeight: '700' }} />
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', flexWrap: 'wrap' }}>
