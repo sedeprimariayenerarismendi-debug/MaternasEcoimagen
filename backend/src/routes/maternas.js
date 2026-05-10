@@ -28,7 +28,28 @@ router.get('/', authMiddleware, async (req, res) => {
       },
       orderBy: { createdAt: 'desc' },
     });
-    res.json(maternas);
+    
+    const allEventsForPackages = await prisma.eventoMedico.findMany({
+       where: { maternaId: { in: maternas.map(m => m.id) } },
+       select: { maternaId: true, paqueteId: true, tipo: true, esControl: true }
+    });
+    
+    // Agrupar por materna
+    const pkgMap = {};
+    allEventsForPackages.forEach(e => {
+       if (!pkgMap[e.maternaId]) pkgMap[e.maternaId] = { s: new Set(), basico: false };
+       if (e.paqueteId) pkgMap[e.maternaId].s.add(e.paqueteId);
+       if (e.tipo === 'CITA' && e.esControl && !e.paqueteId) pkgMap[e.maternaId].basico = true;
+    });
+
+    const processedMaternas = maternas.map(m => {
+       const p = pkgMap[m.id] || { s: new Set(), basico: false };
+       const arr = Array.from(p.s);
+       if (p.basico) arr.push('basico');
+       return { ...m, paquetesSeleccionados: arr };
+    });
+
+    res.json(processedMaternas);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al obtener registros de maternas' });
@@ -171,7 +192,17 @@ router.get('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Paciente no encontrada' });
     }
 
-    res.json(materna);
+    const paquetes = new Set();
+    let hasBasico = false;
+    materna.eventos.forEach(e => {
+       if (e.paqueteId) paquetes.add(e.paqueteId);
+       if (e.tipo === 'CITA' && e.esControl && !e.paqueteId) hasBasico = true;
+    });
+    
+    const paquetesSeleccionados = Array.from(paquetes);
+    if (hasBasico) paquetesSeleccionados.push('basico');
+
+    res.json({ ...materna, paquetesSeleccionados });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al obtener detalle de materna' });

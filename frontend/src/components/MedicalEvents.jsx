@@ -51,6 +51,11 @@ const MedicalEvents = ({ maternaId }) => {
       fechaSiguienteControl: ''
   });
   
+  // States for Agendar Modal
+  const [isAgendarModalOpen, setIsAgendarModalOpen] = useState(false);
+  const [agendarEvent, setAgendarEvent] = useState(null);
+  const [agendarDate, setAgendarDate] = useState('');
+  
   const [formData, setFormData] = useState({
     tipo: 'ESTUDIO',
     descripcion: '',
@@ -174,17 +179,43 @@ const MedicalEvents = ({ maternaId }) => {
   };
 
   const handleToggleAgendado = async (evento) => {
-    const nowAgendado = !evento.estaAgendado;
+    if (!evento.estaAgendado) {
+      setAgendarEvent(evento);
+      setAgendarDate('');
+      setIsAgendarModalOpen(true);
+      return;
+    }
+    
+    // Desagendar
     try {
       await api.patch(`/eventos/${evento.id}`, {
-        estaAgendado: nowAgendado,
-        // Al desagendar, limpiar la fecha de agendamiento
-        fechaAgendamiento: nowAgendado ? (evento.fechaAgendamiento || null) : null,
+        estaAgendado: false,
+        fechaAgendamiento: null,
       });
       fetchEventos();
-      notify(nowAgendado ? 'Cita marcada como agendada' : 'Cita marcada como por agendar');
+      notify('Cita marcada como por agendar');
     } catch (err) {
       notify('Error al actualizar agendamiento', 'error');
+    }
+  };
+
+  const handleConfirmAgendar = async () => {
+    if (!agendarDate) {
+      notify('Debe seleccionar una fecha', 'warning');
+      return;
+    }
+    try {
+      await api.patch(`/eventos/${agendarEvent.id}`, {
+        estaAgendado: true,
+        fechaAgendamiento: new Date(agendarDate + 'T12:00:00')
+      });
+      setIsAgendarModalOpen(false);
+      setAgendarEvent(null);
+      setAgendarDate('');
+      fetchEventos();
+      notify('Cita marcada como agendada');
+    } catch (err) {
+      notify('Error al guardar fecha', 'error');
     }
   };
 
@@ -691,6 +722,11 @@ const MedicalEvents = ({ maternaId }) => {
                                                         <Bell size={10} />
                                                         {evento.estaAgendado ? 'AGENDADO' : 'AGENDAR'}
                                                     </button>
+                                                    {evento.estaAgendado && evento.fechaAgendamiento && (
+                                                        <span style={{ fontSize: '0.65rem', color: 'var(--success-color)', fontWeight: '800' }}>
+                                                            {new Date(evento.fechaAgendamiento).toLocaleDateString()}
+                                                        </span>
+                                                    )}
                                                     
                                                     {evento.tipo === 'CONSULTA' && (
                                                         <button
@@ -1138,6 +1174,31 @@ const MedicalEvents = ({ maternaId }) => {
                     <button type="submit" style={{ flex: 2, padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--primary-color)', color: 'white', fontWeight: '900', cursor: 'pointer' }}>Confirmar y Guardar</button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+
+        {isAgendarModalOpen && agendarEvent && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4000, padding: '20px' }}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="organic-card" style={{ width: '100%', maxWidth: '450px', padding: '2rem', boxShadow: 'var(--shadow-xl)' }}>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: '950', color: 'var(--text-main)', margin: '0 0 1.5rem' }}>Fecha de Agendamiento</h3>
+              
+              <div style={{ marginBottom: '1.5rem', padding: '12px', background: 'var(--primary-color)05', borderRadius: '12px', border: '1px solid var(--primary-color)15' }}>
+                  <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Actividad</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '1rem', fontWeight: '900', color: 'var(--text-main)' }}>{agendarEvent.descripcion}</p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                <div>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '900', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>¿PARA QUÉ FECHA QUEDÓ AGENDADA?</label>
+                    <input type="date" value={agendarDate} onChange={e => setAgendarDate(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--primary-color)40', background: 'var(--bg-color)', fontWeight: '700', color: 'var(--text-main)' }} />
+                </div>
+                
+                <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem' }}>
+                    <button type="button" onClick={() => setIsAgendarModalOpen(false)} style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', fontWeight: '800', cursor: 'pointer', color: 'var(--text-main)' }}>Cancelar</button>
+                    <button type="button" onClick={handleConfirmAgendar} style={{ flex: 2, padding: '12px', borderRadius: '12px', border: 'none', background: 'var(--primary-color)', color: 'white', fontWeight: '900', cursor: 'pointer' }}>Guardar Fecha</button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}

@@ -76,7 +76,7 @@ const Maternas = () => {
         fechaNacimiento: materna.fechaNacimiento.split('T')[0],
         fechaEmbarazo: materna.fechaEmbarazo.split('T')[0],
         tipoRiesgo: materna.tipoRiesgo,
-        paquetesSeleccionados: [],
+        paquetesSeleccionados: materna.paquetesSeleccionados || [],
         alertas: materna.alertas || '',
         telefono: materna.telefono || '',
         direccion: materna.direccion || '',
@@ -247,6 +247,7 @@ const Maternas = () => {
                 <th style={{ padding: '1rem 1.2rem' }}>PACIENTE</th>
                 <th style={{ padding: '1rem 1.2rem' }}>DOCUMENTO</th>
                 <th style={{ padding: '1rem 1.2rem' }}>F. EMBARAZO</th>
+                <th style={{ padding: '1rem 1.2rem' }}>PAQUETES</th>
                 <th style={{ padding: '1rem 1.2rem' }}>RIESGO</th>
                 <th style={{ padding: '1rem 1.2rem' }}>CARPETA</th>
                 <th style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>ACCIONES</th>
@@ -279,6 +280,24 @@ const Maternas = () => {
                       <Calendar size={14} style={{ color: 'var(--text-muted)' }} />
                       {new Date(m.fechaEmbarazo).toLocaleDateString()}
                     </div>
+                  </td>
+                  <td style={{ padding: '1rem 1.2rem', borderBottom: '1px solid var(--border-color)' }}>
+                    {m.paquetesSeleccionados?.length > 0 ? (
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        {m.paquetesSeleccionados.map(pid => {
+                          const isBasico = pid === 'basico';
+                          const pack = paquetes.find(p => p.id === pid);
+                          const name = isBasico ? 'Básico' : (pack?.nombre || 'Paquete');
+                          return (
+                            <span key={pid} style={{ fontSize: '0.65rem', background: 'var(--primary-color)15', color: 'var(--primary-color)', padding: '2px 8px', borderRadius: '12px', fontWeight: '800', border: '1px solid var(--primary-color)30' }}>
+                              {name}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Ninguno</span>
+                    )}
                   </td>
                   <td style={{ padding: '1rem 1.2rem', borderBottom: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '900', background: `${getRiskColor(m.tipoRiesgo)}15`, color: getRiskColor(m.tipoRiesgo), border: `1px solid ${getRiskColor(m.tipoRiesgo)}30` }}>
@@ -339,6 +358,20 @@ const Maternas = () => {
                   <div style={{ minWidth: 0 }}>
                     <p style={{ fontWeight: '800', fontSize: '0.85rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nombre}</p>
                     <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{m.documento}</p>
+                    {m.paquetesSeleccionados?.length > 0 && (
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '4px', flexWrap: 'wrap' }}>
+                        {m.paquetesSeleccionados.map(pid => {
+                          const isBasico = pid === 'basico';
+                          const pack = paquetes.find(p => p.id === pid);
+                          const name = isBasico ? 'Básico' : (pack?.nombre || 'P');
+                          return (
+                            <span key={pid} style={{ fontSize: '0.6rem', background: 'var(--primary-color)15', color: 'var(--primary-color)', padding: '2px 6px', borderRadius: '8px', fontWeight: '700' }}>
+                              {name}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
