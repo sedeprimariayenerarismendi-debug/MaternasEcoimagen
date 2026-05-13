@@ -81,7 +81,16 @@ const Maternas = () => {
         telefono: materna.telefono || '',
         direccion: materna.direccion || '',
         contactoEmergencia: materna.contactoEmergencia || '',
-        carpetaEntregada: materna.carpetaEntregada || false
+        contactoEmergencia: materna.contactoEmergencia || '',
+        carpetaEntregada: materna.carpetaEntregada || false,
+        fichaFomag: materna.fichaFomag || {
+          regional: '',
+          grupoEtnico: '',
+          nivelEducativo: '',
+          ocupacion: '',
+          regimen: '',
+          tipoVinculacion: ''
+        }
       });
     } else {
       setCurrentMaterna(null);
@@ -97,7 +106,16 @@ const Maternas = () => {
         telefono: '',
         direccion: '',
         contactoEmergencia: '',
-        carpetaEntregada: false
+        contactoEmergencia: '',
+        carpetaEntregada: false,
+        fichaFomag: {
+          regional: '',
+          grupoEtnico: '',
+          nivelEducativo: '',
+          ocupacion: '',
+          regimen: '',
+          tipoVinculacion: ''
+        }
       });
     }
     setIsModalOpen(true);
@@ -171,6 +189,24 @@ const Maternas = () => {
     }
   };
 
+  const handleDownloadAllFomag = async () => {
+    try {
+      notify('Generando reporte FOMAG...', 'info');
+      const res = await api.get('/fomag/export/excel', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `FOMAG_Toda_Cohorte_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      notify('Reporte descargado correctamente', 'success');
+    } catch (err) {
+      console.error(err);
+      notify('Error al descargar el reporte', 'error');
+    }
+  };
+
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -193,26 +229,53 @@ const Maternas = () => {
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '2px' }}>Gestión de pacientes gestantes.</p>
         </div>
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={(e) => handleOpenModal(e)}
-          style={{ 
-            background: 'var(--primary-color)', 
-            color: 'white', 
-            padding: '10px 20px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px',
-            fontWeight: '800',
-            borderRadius: '16px',
-            fontSize: '0.9rem',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Plus size={18} />
-          <span className="btn-text">Nueva</span>
-        </motion.button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleDownloadAllFomag}
+            style={{ 
+              background: 'linear-gradient(135deg, #1b5e20, #2e7d32)', 
+              color: 'white', 
+              padding: '10px 20px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              fontWeight: '800',
+              borderRadius: '16px',
+              fontSize: '0.9rem',
+              whiteSpace: 'nowrap',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <Folder size={18} />
+            <span className="btn-text">Descargar FOMAG</span>
+          </motion.button>
+          
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={(e) => handleOpenModal(e)}
+            style={{ 
+              background: 'var(--primary-color)', 
+              color: 'white', 
+              padding: '10px 20px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              fontWeight: '800',
+              borderRadius: '16px',
+              fontSize: '0.9rem',
+              whiteSpace: 'nowrap',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <Plus size={18} />
+            <span className="btn-text">Nueva</span>
+          </motion.button>
+        </div>
       </div>
 
       <div className="organic-card" style={{ overflow: 'hidden', position: 'relative', zIndex: 1 }}>
@@ -580,6 +643,67 @@ const Maternas = () => {
                     placeholder="Ej. Alergia a la penicilina, antecedente de preeclampsia..." 
                     style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '14px 18px', width: '100%', minHeight: '80px', resize: 'none' }} 
                   />
+                </div>
+                
+                {/* --- FOMAG Demographics Section --- */}
+                <div style={{ background: 'var(--primary-color)05', borderRadius: '20px', padding: '1rem', border: '1px solid var(--primary-color)20' }}>
+                  <h4 style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: 'var(--primary-color)', fontWeight: '950', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Folder size={16} /> Demografía FOMAG
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)' }}>REGIONAL (1-10)</label>
+                      <input type="text" placeholder="Ej. 1" value={formData.fichaFomag.regional} onChange={e => setFormData({...formData, fichaFomag: {...formData.fichaFomag, regional: e.target.value}})} style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)' }}>GRUPO ÉTNICO</label>
+                      <select value={formData.fichaFomag.grupoEtnico} onChange={e => setFormData({...formData, fichaFomag: {...formData.fichaFomag, grupoEtnico: e.target.value}})} style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'white' }}>
+                        <option value="">Seleccione...</option>
+                        <option value="MESTIZO">Mestizo</option>
+                        <option value="AFRO">Afrocolombiano</option>
+                        <option value="INDIGENA">Indígena</option>
+                        <option value="RAIZAL">Raizal</option>
+                        <option value="ROM">Rom</option>
+                        <option value="NORESP">No Responde</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)' }}>NIVEL EDUCATIVO</label>
+                      <select value={formData.fichaFomag.nivelEducativo} onChange={e => setFormData({...formData, fichaFomag: {...formData.fichaFomag, nivelEducativo: e.target.value}})} style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'white' }}>
+                        <option value="">Seleccione...</option>
+                        <option value="T">T (Técnico)</option>
+                        <option value="E">E (Escolar)</option>
+                        <option value="U">U (Universitario)</option>
+                        <option value="O">O (Otro)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)' }}>OCUPACIÓN</label>
+                      <input type="text" placeholder="Ej. Docente" value={formData.fichaFomag.ocupacion} onChange={e => setFormData({...formData, fichaFomag: {...formData.fichaFomag, ocupacion: e.target.value}})} style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)' }} />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)' }}>RÉGIMEN</label>
+                      <select value={formData.fichaFomag.regimen} onChange={e => setFormData({...formData, fichaFomag: {...formData.fichaFomag, regimen: e.target.value}})} style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'white' }}>
+                        <option value="">Seleccione...</option>
+                        <option value="CONTRIBUTIVO">Contributivo</option>
+                        <option value="SUBSIDIADO">Subsidiado</option>
+                        <option value="VINCULADO">Vinculado</option>
+                        <option value="ESPECIAL">Especial (FOMAG)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.7rem', fontWeight: '900', color: 'var(--text-muted)' }}>VINCULACIÓN</label>
+                      <select value={formData.fichaFomag.tipoVinculacion} onChange={e => setFormData({...formData, fichaFomag: {...formData.fichaFomag, tipoVinculacion: e.target.value}})} style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'white' }}>
+                        <option value="">Seleccione...</option>
+                        <option value="AFILIADO">Afiliado Cotizante</option>
+                        <option value="BENEFICIARIO">Beneficiario</option>
+                      </select>
+                    </div>
+
+                  </div>
                 </div>
                 
                 <div style={{ 

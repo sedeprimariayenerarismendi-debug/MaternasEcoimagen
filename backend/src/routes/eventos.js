@@ -35,7 +35,12 @@ router.post('/', authMiddleware, async (req, res) => {
       prestadoresIds,
       esControl,
       resultado,
-      trimestre
+      trimestre,
+      tensionArterial,
+      peso,
+      clasificacionNutricional,
+      alturaUterina,
+      frecuenciaCardiacaFetal
     } = req.body;
 
     if (!tipo || !descripcion || !fechaProgramada || !maternaId) {
@@ -54,6 +59,11 @@ router.post('/', authMiddleware, async (req, res) => {
         maternaId: parseInt(maternaId),
         notas,
         trimestre,
+        tensionArterial,
+        peso: peso ? parseFloat(peso) : null,
+        clasificacionNutricional,
+        alturaUterina: alturaUterina ? parseFloat(alturaUterina) : null,
+        frecuenciaCardiacaFetal: frecuenciaCardiacaFetal ? parseInt(frecuenciaCardiacaFetal) : null,
         estado: 'PENDIENTE',
         estaAgendado: false,
         prestadores: (prestadoresIds && prestadoresIds.length > 0) ? {
@@ -74,7 +84,12 @@ router.post('/', authMiddleware, async (req, res) => {
 router.patch('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const { estado, fechaRealizada, notas, fechaProgramada, descripcion, codigoCUPS, prestadoresIds, esControl, resultado, estaAgendado, fechaAgendamiento, trimestre } = req.body;
+    const { 
+      estado, fechaRealizada, notas, fechaProgramada, descripcion, codigoCUPS, 
+      prestadoresIds, esControl, resultado, estaAgendado, fechaAgendamiento, 
+      trimestre, tensionArterial, peso, clasificacionNutricional, 
+      alturaUterina, frecuenciaCardiacaFetal 
+    } = req.body;
 
     const data = {};
     if (estado) data.estado = estado;
@@ -91,6 +106,12 @@ router.patch('/:id', authMiddleware, async (req, res) => {
       data.fechaAgendamiento = fechaAgendamiento ? new Date(fechaAgendamiento) : null;
     }
     if (trimestre !== undefined) data.trimestre = trimestre;
+    if (tensionArterial !== undefined) data.tensionArterial = tensionArterial;
+    if (peso !== undefined) data.peso = peso ? parseFloat(peso) : null;
+    if (clasificacionNutricional !== undefined) data.clasificacionNutricional = clasificacionNutricional;
+    if (alturaUterina !== undefined) data.alturaUterina = alturaUterina ? parseFloat(alturaUterina) : null;
+    if (frecuenciaCardiacaFetal !== undefined) data.frecuenciaCardiacaFetal = frecuenciaCardiacaFetal ? parseInt(frecuenciaCardiacaFetal) : null;
+
     if (prestadoresIds) {
       data.prestadores = {
         set: prestadoresIds.map(id => ({ id: parseInt(id) }))

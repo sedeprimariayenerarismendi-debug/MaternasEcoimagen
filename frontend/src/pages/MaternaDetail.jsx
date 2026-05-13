@@ -141,6 +141,24 @@ const MaternaDetail = () => {
     }
   };
 
+  const handleDownloadFomag = async () => {
+    try {
+      notify('Generando reporte FOMAG...', 'info');
+      const res = await api.get(`/fomag/export/excel/${id}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `FOMAG_${materna?.nombre?.split(' ').join('_') || 'Paciente'}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      notify('Reporte descargado correctamente', 'success');
+    } catch (err) {
+      console.error(err);
+      notify('Error al descargar el reporte', 'error');
+    }
+  };
+
   if (loading) return <LoadingSpinner />;
   if (!materna) return (
     <div style={{ padding: '4rem', textAlign: 'center' }}>
@@ -165,33 +183,57 @@ const MaternaDetail = () => {
       {/* Decorative Blobs */}
       <div className="blob" style={{ width: '400px', height: '400px', background: 'var(--primary-color)', top: '-100px', right: '-100px', filter: 'blur(100px)', opacity: 0.05 }} />
 
-      {/* Back button */}
-      <motion.button
-        variants={itemVariants}
-        onClick={() => navigate('/maternas')}
-        whileHover={{ x: -3 }}
-        whileTap={{ scale: 0.97 }}
-        style={{
-          background: 'var(--card-bg)',
-          border: '1px solid var(--border-color)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          color: 'var(--text-muted)',
-          marginBottom: '1rem',
-          padding: '8px 16px',
-          borderRadius: '12px',
-          fontWeight: '800',
-          fontSize: '0.75rem',
-          textTransform: 'uppercase',
-          letterSpacing: '0.8px',
-          cursor: 'pointer',
-          position: 'relative',
-          zIndex: 1
-        }}
-      >
-        <ArrowLeft size={14} /> Volver al Listado
-      </motion.button>
+      {/* Nav buttons row */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+        <motion.button
+          variants={itemVariants}
+          onClick={() => navigate('/maternas')}
+          whileHover={{ x: -3 }}
+          whileTap={{ scale: 0.97 }}
+          style={{
+            background: 'var(--card-bg)',
+            border: '1px solid var(--border-color)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: 'var(--text-muted)',
+            padding: '8px 16px',
+            borderRadius: '12px',
+            fontWeight: '800',
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.8px',
+            cursor: 'pointer',
+          }}
+        >
+          <ArrowLeft size={14} /> Volver al Listado
+        </motion.button>
+
+        <motion.button
+          variants={itemVariants}
+          onClick={handleDownloadFomag}
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.96 }}
+          style={{
+            background: 'linear-gradient(135deg, #1b5e20, #2e7d32)',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: '#fff',
+            padding: '8px 18px',
+            borderRadius: '12px',
+            fontWeight: '800',
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.8px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(27,94,32,0.3)',
+          }}
+        >
+          📋 Ficha FOMAG
+        </motion.button>
+      </div>
 
       {/* ─── Main Grid Layout ─── */}
       <div className="detail-grid-layout" style={{ 

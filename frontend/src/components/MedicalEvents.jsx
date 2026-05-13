@@ -48,7 +48,12 @@ const MedicalEvents = ({ maternaId }) => {
   const [completeData, setCompleteData] = useState({
       fechaRealizada: new Date().toISOString().split('T')[0],
       resultado: '',
-      fechaSiguienteControl: ''
+      fechaSiguienteControl: '',
+      tensionArterial: '',
+      peso: '',
+      clasificacionNutricional: 'NORMAL',
+      alturaUterina: '',
+      frecuenciaCardiacaFetal: ''
   });
   
   // States for Agendar Modal
@@ -163,7 +168,12 @@ const MedicalEvents = ({ maternaId }) => {
         setCompleteData({
             fechaRealizada: new Date().toISOString().split('T')[0],
             resultado: evento.resultado || '',
-            fechaSiguienteControl: nextDate.toISOString().split('T')[0]
+            fechaSiguienteControl: nextDate.toISOString().split('T')[0],
+            tensionArterial: evento.tensionArterial || '',
+            peso: evento.peso || '',
+            clasificacionNutricional: evento.clasificacionNutricional || 'NORMAL',
+            alturaUterina: evento.alturaUterina || '',
+            frecuenciaCardiacaFetal: evento.frecuenciaCardiacaFetal || ''
         });
         setIsCompleteModalOpen(true);
         return;
@@ -232,11 +242,22 @@ const MedicalEvents = ({ maternaId }) => {
     e.preventDefault();
     if (!completingEvent) return;
     try {
-        await api.patch(`/eventos/${completingEvent.id}`, {
+        const patchData = {
             estado: 'REALIZADO',
             fechaRealizada: completeData.fechaRealizada,
             resultado: completeData.resultado
-        });
+        };
+        
+        // Si es control clínico, enviar vitales
+        if (completingEvent.esControl) {
+            patchData.tensionArterial = completeData.tensionArterial;
+            patchData.peso = completeData.peso;
+            patchData.clasificacionNutricional = completeData.clasificacionNutricional;
+            patchData.alturaUterina = completeData.alturaUterina;
+            patchData.frecuenciaCardiacaFetal = completeData.frecuenciaCardiacaFetal;
+        }
+
+        await api.patch(`/eventos/${completingEvent.id}`, patchData);
 
         notify(completingEvent.tipo === 'LABORATORIO' ? 'Resultado registrado' : 'Actividad completada');
 
@@ -1154,6 +1175,40 @@ const MedicalEvents = ({ maternaId }) => {
                   <div>
                     <label style={{ fontSize: '0.75rem', fontWeight: '900', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>RESULTADO / NOTAS</label>
                     <textarea placeholder="Ingrese los resultados..." value={completeData.resultado} onChange={e => setCompleteData({...completeData, resultado: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', minHeight: '100px', resize: 'none' }} />
+                  </div>
+                )}
+                
+                {completingEvent.esControl && (
+                  <div style={{ padding: '12px', background: 'rgba(233, 30, 140, 0.05)', borderRadius: '12px', border: '1px solid rgba(233, 30, 140, 0.2)' }}>
+                    <h4 style={{ margin: '0 0 10px', fontSize: '0.8rem', color: 'var(--primary-color)', fontWeight: '900' }}>SIGNOS VITALES Y MEDICIONES (FOMAG)</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <div>
+                            <label style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--text-muted)' }}>TENSIÓN ARTERIAL (S/D)</label>
+                            <input type="text" placeholder="Ej. 120/80" value={completeData.tensionArterial} onChange={e => setCompleteData({...completeData, tensionArterial: e.target.value})} required style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.8rem' }} />
+                        </div>
+                        <div>
+                            <label style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--text-muted)' }}>PESO (kg)</label>
+                            <input type="number" step="0.1" placeholder="Ej. 65.5" value={completeData.peso} onChange={e => setCompleteData({...completeData, peso: e.target.value})} required style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.8rem' }} />
+                        </div>
+                        <div>
+                            <label style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--text-muted)' }}>ALTURA UTERINA (cm)</label>
+                            <input type="number" step="0.1" placeholder="Ej. 24" value={completeData.alturaUterina} onChange={e => setCompleteData({...completeData, alturaUterina: e.target.value})} required style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.8rem' }} />
+                        </div>
+                        <div>
+                            <label style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--text-muted)' }}>F.C.F (lpm)</label>
+                            <input type="number" placeholder="Ej. 140" value={completeData.frecuenciaCardiacaFetal} onChange={e => setCompleteData({...completeData, frecuenciaCardiacaFetal: e.target.value})} required style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.8rem' }} />
+                        </div>
+                        <div style={{ gridColumn: '1 / -1' }}>
+                            <label style={{ fontSize: '0.65rem', fontWeight: '900', color: 'var(--text-muted)' }}>CLASIFICACIÓN NUTRICIONAL</label>
+                            <select value={completeData.clasificacionNutricional} onChange={e => setCompleteData({...completeData, clasificacionNutricional: e.target.value})} required style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.8rem', background: 'white' }}>
+                                <option value="NORMAL">Normal</option>
+                                <option value="BP">BP (Bajo Peso)</option>
+                                <option value="SP">SP (Sobrepeso)</option>
+                                <option value="OB1">OB1 (Obesidad 1)</option>
+                                <option value="OB2">OB2 (Obesidad 2)</option>
+                            </select>
+                        </div>
+                    </div>
                   </div>
                 )}
                 {completingEvent.tipo === 'CONSULTA' && completingEvent.esControl && (

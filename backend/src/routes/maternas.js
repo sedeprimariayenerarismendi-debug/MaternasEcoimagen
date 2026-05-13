@@ -94,12 +94,16 @@ router.post('/', authMiddleware, async (req, res) => {
         direccion,
         contactoEmergencia,
         carpetaEntregada: !!req.body.carpetaEntregada,
-        creadaPorId: req.user.id
+        creadaPorId: req.user.id,
+        ...(req.body.fichaFomag ? {
+          fichaFomag: { create: req.body.fichaFomag }
+        } : {})
       },
       include: {
         creadaPor: {
           select: { nombre: true }
-        }
+        },
+        fichaFomag: true
       }
     });
 
@@ -140,13 +144,23 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (contactoEmergencia !== undefined) updateData.contactoEmergencia = contactoEmergencia;
     if (req.body.carpetaEntregada !== undefined) updateData.carpetaEntregada = !!req.body.carpetaEntregada;
 
+    if (req.body.fichaFomag) {
+      updateData.fichaFomag = {
+        upsert: {
+          create: req.body.fichaFomag,
+          update: req.body.fichaFomag
+        }
+      };
+    }
+
     const materna = await prisma.materna.update({
       where: { id: parseInt(id) },
       data: updateData,
       include: {
         creadaPor: {
           select: { nombre: true }
-        }
+        },
+        fichaFomag: true
       }
     });
 

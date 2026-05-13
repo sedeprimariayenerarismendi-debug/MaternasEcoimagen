@@ -33,11 +33,12 @@ model Materna {
   direccion       String?
   contactoEmergencia String?
   creadaPorId     Int
-  creadaPor       User           @relation(fields: [creadaPorId], references: [id])
+  creadaPor       User             @relation(fields: [creadaPorId], references: [id])
   eventos         EventoMedico[]
-  carpetaEntregada Boolean        @default(false)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  carpetaEntregada Boolean          @default(false)
+  fichaFomag      FichaFomag?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model EventoMedico {
@@ -60,6 +61,12 @@ model EventoMedico {
   paqueteId       Int?
   plantillaId     Int?
   plantilla       PlantillaEvento? @relation(fields: [plantillaId], references: [id], onDelete: SetNull)
+  // Variables clínicas FOMAG para controles
+  tensionArterial         String?  // ej: "120/80"
+  peso                    Float?   // kg
+  clasificacionNutricional String? // NORMAL, BP, SP, OB1, OB2
+  alturaUterina           Float?   // cm
+  frecuenciaCardiacaFetal Int?     // lpm
   maternaId       Int
   materna         Materna  @relation(fields: [maternaId], references: [id])
   createdAt       DateTime @default(now())
@@ -108,4 +115,57 @@ model ThemeConfig {
   darkMode        Boolean @default(false)
   clinicName      String  @default("Clínica Maternas")
   logoUrl         String?
+}
+
+// ─── FOMAG Cohorte Materno Perinatal ──────────────────────────────────────
+
+model FichaFomag {
+  id                    Int       @id @default(autoincrement())
+  maternaId             Int       @unique
+  materna               Materna   @relation(fields: [maternaId], references: [id], onDelete: Cascade)
+
+  // Ubicación e identificación FOMAG
+  regional              String?   // 1-10
+  departamento          String?
+  municipio             String?
+  correo                String?
+
+  // Características sociodemográficas (enums FOMAG)
+  grupoEtnico           String?   // MESTIZO, AFRO, INDIGENA, RAIZAL, ROM, NORESP
+  nivelEducativo        String?   // T=Técnico, E=Escolar, U=Universitario, O=Otro
+  ocupacion             String?
+  regimen               String?   // CONTRIBUTIVO, SUBSIDIADO, VINCULADO, ESPECIAL
+  tipoVinculacion       String?   // AFILIADO, BENEFICIARIO
+
+  // Información gestacional adicional
+  fechaUltimaRegla      DateTime?
+  fechaProbableParto    DateTime?
+  fechaIngresoControl   DateTime?
+  antecedentes          String?
+
+  // Micronutrientes
+  hierroCantidad        String?
+  hierroFecha           DateTime?
+  acidoFolicoCantidad   String?
+  acidoFolicoFecha      DateTime?
+  calcioCantidad        String?
+  calcioFecha           DateTime?
+
+  // Vacunas
+  toxoideTetanico       String?   // Fecha o dosis aplicada
+  tdap                  String?
+  influenza             String?
+  covid1Fecha           DateTime?
+  covid2Fecha           DateTime?
+
+  // Resultado final del embarazo
+  fechaParto            DateTime?
+  tipoParto             String?   // EUTOCICO, CESAREA, INSTRUMENTADO, ABORTO
+  estadoRecienNacido    String?   // VIVO, MUERTO
+  pesoRN                Float?    // gramos
+  tallaRN               Float?    // centímetros
+  apgar                 String?   // ej: "8/9"
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 }

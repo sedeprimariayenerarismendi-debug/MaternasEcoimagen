@@ -11,6 +11,7 @@ const maternasRoutes = require("./routes/maternas");
 const eventosRoutes = require("./routes/eventos");
 const paquetesRoutes = require("./routes/paquetes");
 const prestadoresRoutes = require("./routes/prestadores");
+const fomagRoutes = require("./routes/fomag");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -33,6 +34,7 @@ app.use("/api/maternas", maternasRoutes);
 app.use("/api/eventos", eventosRoutes);
 app.use("/api/paquetes", paquetesRoutes);
 app.use("/api/prestadores", prestadoresRoutes);
+app.use("/api/fomag", fomagRoutes);
 
 // Serve Static Files (Frontend)
 const frontendPath = path.join(__dirname, "../../frontend/dist");
