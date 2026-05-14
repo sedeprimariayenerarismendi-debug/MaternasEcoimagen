@@ -67,8 +67,20 @@ model EventoMedico {
   clasificacionNutricional String? // NORMAL, BP, SP, OB1, OB2
   alturaUterina           Float?   // cm
   frecuenciaCardiacaFetal Int?     // lpm
+  edadGestacional         Int?     // Semanas
+  riesgoObstetrico        String?
+  diagnosticoAro          String?
+  riesgoPsicosocial       String?
+  atributoRiesgoPsicosocial String?
+  imc                     Float?
+  prescripcionAsa         String?
+  riesgoTromboembolico    String?
+  riesgoHipertension      String?
+  riesgoPreeclampsia      String?
+  toxoplasmaIgmControl    String?
+  hemoparasitosControl    String?
   maternaId       Int
-  materna         Materna  @relation(fields: [maternaId], references: [id])
+  materna         Materna  @relation(fields: [maternaId], references: [id], onDelete: Cascade)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
@@ -128,6 +140,7 @@ model FichaFomag {
   regional              String?   // 1-10
   departamento          String?
   municipio             String?
+  ips                   String?
   correo                String?
 
   // Características sociodemográficas (enums FOMAG)
@@ -136,6 +149,20 @@ model FichaFomag {
   ocupacion             String?
   regimen               String?   // CONTRIBUTIVO, SUBSIDIADO, VINCULADO, ESPECIAL
   tipoVinculacion       String?   // AFILIADO, BENEFICIARIO
+  etnia                 String?
+  identidadGenero       String?
+  discapacidad          String?
+  victimaViolencia      String?
+  embarazoDeseado       String?
+  redApoyo              String?
+  tamizajeViolencia     String?
+  tamizajeDepresion     String?
+
+  // Preconcepcionales
+  atencionPreconcepcional String?
+  asesoriaAnticonceptivo  String?
+  acidoFolicoPrevio       String?
+  citasPreconcepcionales  Int?
 
   // Información gestacional adicional
   fechaUltimaRegla      DateTime?
@@ -151,6 +178,49 @@ model FichaFomag {
   calcioCantidad        String?
   calcioFecha           DateTime?
 
+  // Laboratorios FOMAG
+  hemoglobina1Fecha            DateTime?
+  hemoglobina1Resultado        String?
+  hemoglobina2Fecha            DateTime?
+  hemoglobina2Resultado        String?
+  hemoclasificacionFecha       DateTime?
+  hemoclasificacionResultado   String?
+  serologiaFecha               DateTime?
+  serologiaResultado           String?
+  vihFecha                     DateTime?
+  vihResultado                 String?
+  glicemiaFecha                DateTime?
+  glicemiaResultado            String?
+  urocultivoFecha              DateTime?
+  urocultivoResultado          String?
+  frotisFecha                  DateTime?
+  frotisResultado              String?
+  toxoplasmaIggFecha           DateTime?
+  toxoplasmaIggResultado       String?
+  toxoplasmaIgmFecha           DateTime?
+  toxoplasmaIgmResultado       String?
+  sifilis1Fecha                DateTime?
+  sifilis1Resultado            String?
+  chagasFecha                  DateTime?
+  chagasResultado              String?
+  ptogResultado                String?
+  rubeolaIggResultado          String?
+  
+  // Ecografías
+  eco1Fecha                    DateTime?
+  eco1Interpretacion           String?
+  eco2Fecha                    DateTime?
+  eco2Interpretacion           String?
+  eco3Fecha                    DateTime?
+  eco3Interpretacion           String?
+
+  // Tratamientos Sifilis
+  sifilisDiagnostico           String?
+  sifilisSemanasTratamiento    Int?
+  sifilisTratamiento           String?
+  sifilisCompleto              String?
+  sifilisContactos             Int?
+
   // Vacunas
   toxoideTetanico       String?   // Fecha o dosis aplicada
   tdap                  String?
@@ -165,6 +235,26 @@ model FichaFomag {
   pesoRN                Float?    // gramos
   tallaRN               Float?    // centímetros
   apgar                 String?   // ej: "8/9"
+  
+  // Postparto y Recién Nacido FOMAG
+  presentoMme             String?
+  dxMme                   String?
+  zikaGestacion           String?
+  institucionParto        String?
+  eventoObstetrico        String?
+  partoHumanizado         String?
+  lactanciaExclusiva      String?
+  tshRnFecha              DateTime?
+  tshRnResultado          String?
+  tamizajeAuditivoRn      String?
+  altaRnFecha             DateTime?
+  consultaRnFecha         DateTime?
+  altaPuerperaFecha       DateTime?
+  consultaPuerperaFecha   DateTime?
+  metodoPostparto         String?
+  metodoElegido           String?
+  entregaMedicamentos     String?
+  motivoCierre            String?
 
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt

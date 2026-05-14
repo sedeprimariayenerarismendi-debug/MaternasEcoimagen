@@ -12,7 +12,9 @@ import {
   CreditCard,
   AlertTriangle,
   ClipboardList,
-  Folder
+  Folder,
+  Upload,
+  FileSpreadsheet
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -27,6 +29,7 @@ const Maternas = () => {
   const [paquetes, setPaquetes] = useState([]);
   const navigate = useNavigate();
   const { notify, confirm } = useNotification();
+  const [importing, setImporting] = useState(false);
   
   const [formData, setFormData] = useState({
     nombre: '',
@@ -207,6 +210,32 @@ const Maternas = () => {
     }
   };
 
+  const handleImportFomag = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setImporting(true);
+    try {
+      notify('Importando archivo FOMAG...', 'info');
+      const form = new FormData();
+      form.append('archivo', file);
+      const res = await api.post('/fomag/import', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const { creados, actualizados, errores } = res.data;
+      notify(
+        `✅ Importación completa: ${creados} creadas, ${actualizados} actualizadas${errores.length ? `, ${errores.length} errores` : ''}`,
+        errores.length ? 'warning' : 'success',
+        6000
+      );
+      fetchMaternas();
+    } catch (err) {
+      notify(err.response?.data?.error || 'Error al importar el archivo', 'error');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -229,7 +258,40 @@ const Maternas = () => {
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '2px' }}>Gestión de pacientes gestantes.</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Importar FOMAG */}
+          <input
+            id="fomag-import-input"
+            type="file"
+            accept=".xlsx,.xls"
+            style={{ display: 'none' }}
+            onChange={handleImportFomag}
+          />
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            disabled={importing}
+            onClick={() => document.getElementById('fomag-import-input').click()}
+            style={{
+              background: importing ? 'var(--border-color)' : 'linear-gradient(135deg, #4a1942, #7b2d8b)',
+              color: 'white',
+              padding: '10px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontWeight: '800',
+              borderRadius: '16px',
+              fontSize: '0.9rem',
+              whiteSpace: 'nowrap',
+              border: 'none',
+              cursor: importing ? 'not-allowed' : 'pointer'
+            }}
+          >
+            <Upload size={18} />
+            <span className="btn-text">{importing ? 'Importando...' : 'Importar FOMAG'}</span>
+          </motion.button>
+
+          {/* Exportar FOMAG */}
           <motion.button 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -249,8 +311,8 @@ const Maternas = () => {
               cursor: 'pointer'
             }}
           >
-            <Folder size={18} />
-            <span className="btn-text">Descargar FOMAG</span>
+            <FileSpreadsheet size={18} />
+            <span className="btn-text">Exportar FOMAG</span>
           </motion.button>
           
           <motion.button 

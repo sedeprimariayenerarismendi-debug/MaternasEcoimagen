@@ -65,17 +65,20 @@ async function seedPaquetesFomag() {
   
   await prisma.plantillaEvento.createMany({
     data: [
-      { paqueteId: 1, tipo: 'CONSULTA', descripcion: 'Control Prenatal Ingreso (Medicina General)', semanasRelativas: 0, esObligatorio: true, esControl: true },
+      { paqueteId: 1, tipo: 'CONSULTA', descripcion: 'Control Prenatal Ingreso (Médico/Ginecobstetra)', semanasRelativas: 0, esObligatorio: true, esControl: true },
       { paqueteId: 1, tipo: 'CONSULTA', descripcion: 'Control Prenatal (Enfermería)', semanasRelativas: 4, esObligatorio: true, esControl: true },
       { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'TSH', semanasRelativas: 1, esObligatorio: true, esControl: false },
       { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'Hemograma I', semanasRelativas: 1, esObligatorio: true, esControl: false },
       { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'Hemoclasificación', semanasRelativas: 1, esObligatorio: true, esControl: false },
-      { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'VIH I', semanasRelativas: 1, esObligatorio: true, esControl: false },
-      { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'Serología I', semanasRelativas: 1, esObligatorio: true, esControl: false },
+      { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'VIH (Prueba Rápida I)', semanasRelativas: 1, esObligatorio: true, esControl: false },
+      { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'Sífilis (Prueba Treponémica I)', semanasRelativas: 1, esObligatorio: true, esControl: false },
       { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'Glicemia', semanasRelativas: 1, esObligatorio: true, esControl: false },
       { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'Urocultivo I', semanasRelativas: 1, esObligatorio: true, esControl: false },
       { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'Toxoplasma IgG/IgM', semanasRelativas: 1, esObligatorio: true, esControl: false },
-      { paqueteId: 1, tipo: 'ESTUDIO', descripcion: 'Ecografía Obstétrica Tamizaje (11-13.6 Sem)', semanasRelativas: 12, esObligatorio: true, esControl: false },
+      { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'Rubeola IgG', semanasRelativas: 1, esObligatorio: false, esControl: false },
+      { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'Chagas', semanasRelativas: 1, esObligatorio: false, esControl: false },
+      { paqueteId: 1, tipo: 'LABORATORIO', descripcion: 'HBsAg (Hepatitis B)', semanasRelativas: 1, esObligatorio: true, esControl: false },
+      { paqueteId: 1, tipo: 'ESTUDIO', descripcion: 'Ecografía 1er Trimestre (10.6 - 13.6 Sem)', semanasRelativas: 11, esObligatorio: true, esControl: false },
     ]
   });
 
@@ -95,11 +98,16 @@ async function seedPaquetesFomag() {
 
   await prisma.plantillaEvento.createMany({
     data: [
-      { paqueteId: 2, tipo: 'CONSULTA', descripcion: 'Control Prenatal', semanasRelativas: 16, esObligatorio: true, esControl: true },
-      { paqueteId: 2, tipo: 'CONSULTA', descripcion: 'Control Prenatal', semanasRelativas: 20, esObligatorio: true, esControl: true },
-      { paqueteId: 2, tipo: 'CONSULTA', descripcion: 'Control Prenatal', semanasRelativas: 24, esObligatorio: true, esControl: true },
-      { paqueteId: 2, tipo: 'ESTUDIO', descripcion: 'Ecografía Detalle Anatómico (20-24 Sem)', semanasRelativas: 20, esObligatorio: true, esControl: false },
+      { paqueteId: 2, tipo: 'CONSULTA', descripcion: 'Control Prenatal (Semana 16)', semanasRelativas: 16, esObligatorio: true, esControl: true },
+      { paqueteId: 2, tipo: 'CONSULTA', descripcion: 'Control Prenatal (Semana 20)', semanasRelativas: 20, esObligatorio: true, esControl: true },
+      { paqueteId: 2, tipo: 'CONSULTA', descripcion: 'Control Prenatal (Semana 24)', semanasRelativas: 24, esObligatorio: true, esControl: true },
+      { paqueteId: 2, tipo: 'CONSULTA', descripcion: 'Control Prenatal (Semana 26)', semanasRelativas: 26, esObligatorio: true, esControl: true },
+      { paqueteId: 2, tipo: 'ESTUDIO', descripcion: 'Ecografía Detalle Anatómico (18-23 Sem)', semanasRelativas: 20, esObligatorio: true, esControl: false },
+      { paqueteId: 2, tipo: 'LABORATORIO', descripcion: 'Hemograma II', semanasRelativas: 24, esObligatorio: true, esControl: false },
       { paqueteId: 2, tipo: 'LABORATORIO', descripcion: 'PTOG (Glucosa 24-28 Sem)', semanasRelativas: 24, esObligatorio: true, esControl: false },
+      { paqueteId: 2, tipo: 'LABORATORIO', descripcion: 'VIH (Prueba Rápida II)', semanasRelativas: 24, esObligatorio: true, esControl: false },
+      { paqueteId: 2, tipo: 'LABORATORIO', descripcion: 'Sífilis (Prueba Treponémica II)', semanasRelativas: 24, esObligatorio: true, esControl: false },
+      { paqueteId: 2, tipo: 'LABORATORIO', descripcion: 'Tamizaje CCU (Citología)', semanasRelativas: 16, esObligatorio: false, esControl: false },
     ]
   });
 
@@ -119,16 +127,18 @@ async function seedPaquetesFomag() {
 
   await prisma.plantillaEvento.createMany({
     data: [
-      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Control Prenatal', semanasRelativas: 28, esObligatorio: true, esControl: true },
-      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Control Prenatal', semanasRelativas: 32, esObligatorio: true, esControl: true },
-      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Control Prenatal', semanasRelativas: 36, esObligatorio: true, esControl: true },
-      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Control Prenatal', semanasRelativas: 38, esObligatorio: true, esControl: true },
-      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Control Prenatal', semanasRelativas: 40, esObligatorio: true, esControl: true },
-      { paqueteId: 3, tipo: 'LABORATORIO', descripcion: 'VIH III', semanasRelativas: 32, esObligatorio: true, esControl: false },
-      { paqueteId: 3, tipo: 'LABORATORIO', descripcion: 'Serología III', semanasRelativas: 32, esObligatorio: true, esControl: false },
+      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Control Prenatal (Semana 28)', semanasRelativas: 28, esObligatorio: true, esControl: true },
+      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Control Prenatal (Semana 32)', semanasRelativas: 32, esObligatorio: true, esControl: true },
+      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Control Prenatal (Semana 36)', semanasRelativas: 36, esObligatorio: true, esControl: true },
+      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Control Prenatal (Semana 38)', semanasRelativas: 38, esObligatorio: true, esControl: true },
+      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Control Prenatal (Semana 40)', semanasRelativas: 40, esObligatorio: true, esControl: true },
+      { paqueteId: 3, tipo: 'LABORATORIO', descripcion: 'Hemograma Semana 28', semanasRelativas: 28, esObligatorio: true, esControl: false },
+      { paqueteId: 3, tipo: 'LABORATORIO', descripcion: 'VIH (Prueba Rápida III)', semanasRelativas: 32, esObligatorio: true, esControl: false },
+      { paqueteId: 3, tipo: 'LABORATORIO', descripcion: 'Sífilis (Prueba Treponémica III)', semanasRelativas: 32, esObligatorio: true, esControl: false },
       { paqueteId: 3, tipo: 'LABORATORIO', descripcion: 'Estreptococo B (35-37 Sem)', semanasRelativas: 36, esObligatorio: true, esControl: false },
       { paqueteId: 3, tipo: 'ESTUDIO', descripcion: 'Ecografía Obstétrica Crecimiento', semanasRelativas: 32, esObligatorio: true, esControl: false },
       { paqueteId: 3, tipo: 'VACUNA', descripcion: 'Toxoide Tetánico / Tdap', semanasRelativas: 28, esObligatorio: true, esControl: false },
+      { paqueteId: 3, tipo: 'CONSULTA', descripcion: 'Cursos Preparación Maternidad/Paternidad', semanasRelativas: 28, esObligatorio: false, esControl: false },
     ]
   });
 
